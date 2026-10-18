@@ -37,7 +37,7 @@ async function revisarAhora({ alertas, miembroId, fecha }) {
   const reg = await navigator.serviceWorker.ready;
   for (const a of nuevos) {
     await reg.showNotification('¿Olvidaste checar salida?', {
-      body: a.texto, tag: `salida-${fecha}-${a.bloque}`, icon: 'assets/icon-192.png', badge: 'assets/favicon-32.png',
+      body: a.texto, tag: `salida-${fecha}-${a.bloque}`, icon: 'assets/presente-192.png', badge: 'assets/presente-32.png',
       lang: 'es-MX', data: { url: './#inicio' }
     });
   }

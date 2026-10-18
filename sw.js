@@ -36,8 +36,9 @@
 // asis-2026-10-18-v31 · UX-02 nombre y logotipo propios: «Presente» (pin con palomita) en íconos, acceso, instalación, panel y guía con QR.
 // asis-2026-10-18-v32 · HU-39 métricas de la semana en el panel: indicadores con estado, gráficas SVG (asistencia por día, horas por persona, dentro de zona en 8 semanas) con tabla, y lista "Requiere atención".
 // asis-2026-10-18-v33 · HU-25 mapa del panel (Leaflet + OpenStreetMap): perímetros de los parques y checadas del día dentro/fuera de zona, sin teletrabajo ni domicilios.
+// asis-2026-10-18-v34 · UX-02 corrección: íconos con nombre de archivo nuevo (presente-*.png) para que no se reutilice el logotipo anterior guardado; avisos con el nombre «Presente».
 
-const CACHE_VERSION = 'asis-2026-10-18-v33';
+const CACHE_VERSION = 'asis-2026-10-18-v34';
 
 const CASCARON = [
   './',
@@ -85,11 +86,11 @@ const CASCARON = [
   './fonts/ibm-plex-sans-latin-600-normal.woff2',
   './fonts/ibm-plex-mono-latin-400-normal.woff2',
   './fonts/ibm-plex-mono-latin-500-normal.woff2',
-  './assets/icon-192.png',
-  './assets/icon-512-fondo.png',
-  './assets/icon-maskable-512.png',
-  './assets/apple-touch-icon.png',
-  './assets/favicon-32.png'
+  './assets/presente-192.png',
+  './assets/presente-512-fondo.png',
+  './assets/presente-maskable-512.png',
+  './assets/presente-apple-180.png',
+  './assets/presente-32.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -145,8 +146,8 @@ self.addEventListener('notificationclick', (e) => {
 self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch { d = { cuerpo: e.data?.text() }; }
-  e.waitUntil(self.registration.showNotification(d.titulo || 'Asistencia', {
-    body: d.cuerpo || '', tag: d.tag || 'aviso', icon: 'assets/icon-192.png', badge: 'assets/favicon-32.png', lang: 'es-MX',
+  e.waitUntil(self.registration.showNotification(d.titulo || 'Presente', {
+    body: d.cuerpo || '', tag: d.tag || 'aviso', icon: 'assets/presente-192.png', badge: 'assets/presente-32.png', lang: 'es-MX',
     data: { url: d.url || './' }
   }));
 });

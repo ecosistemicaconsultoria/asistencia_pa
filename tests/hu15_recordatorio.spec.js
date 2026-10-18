@@ -36,7 +36,7 @@ test('20:31 con el campo abierto: un aviso en la app y una notificación (solo u
   await expect(page.locator('[data-alerta="olvido_fin"]')).toContainText('¿Olvidaste checar salida?');
   await expect.poll(() => avisos(page)).toHaveLength(1);
   const [a] = await avisos(page);
-  expect(a).toMatchObject({ titulo: '¿Olvidaste checar salida?', tag: `salida-${DIA}-campo`, icon: 'assets/icon-192.png' });
+  expect(a).toMatchObject({ titulo: '¿Olvidaste checar salida?', tag: `salida-${DIA}-campo`, icon: 'assets/presente-192.png' });
   expect(a.body).toContain('El bloque de campo terminaba a las 20:00');
   // Al volver a abrir la app no se repite
   await page.reload();
