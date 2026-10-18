@@ -24,10 +24,11 @@ insert into sitios(id, organizacion_id, clave_externa, nombre, tipo, centro, per
  ('bbbbbbbb-0000-0000-0000-000000000004', '22222222-2222-2222-2222-222222222222', 'DEMO-1', 'Parque Demo', 'parque',
   'SRID=4326;POINT(-107.3900 24.7900)', null, null);
 
-insert into horarios(organizacion_id, miembro_id, dia_semana, bloque, hora_inicio, hora_fin, modalidad) values
- ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', 1, 'escritorio', '09:00', '13:00', 'teletrabajo'),
- ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', 1, 'campo', '16:00', '20:00', 'presencial'),
- ('22222222-2222-2222-2222-222222222222', 'aaaaaaaa-0000-0000-0000-000000000003', 1, 'campo', '16:00', '20:00', 'presencial');
+-- vigente_desde fijo (no el día en que se levanta la API local) para que las pruebas con reloj fijo en oct-2026 vean el horario.
+insert into horarios(organizacion_id, miembro_id, dia_semana, bloque, hora_inicio, hora_fin, modalidad, vigente_desde) values
+ ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', 1, 'escritorio', '09:00', '13:00', 'teletrabajo', '2026-09-01'),
+ ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-0000-0000-0000-000000000001', 1, 'campo', '16:00', '20:00', 'presencial', '2026-09-01'),
+ ('22222222-2222-2222-2222-222222222222', 'aaaaaaaa-0000-0000-0000-000000000003', 1, 'campo', '16:00', '20:00', 'presencial', '2026-09-01');
 
 insert into eventos_jornada(id, miembro_id, tipo, bloque, hora_dispositivo, lat, lon, precision_m, selfie_path, capturado_sin_conexion) values
  ('cccccccc-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'inicio_bloque', 'campo', '2026-10-01 16:00-07', 24.8047, -107.4372, 6, 'x.webp', true),

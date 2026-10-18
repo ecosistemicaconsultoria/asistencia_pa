@@ -80,9 +80,14 @@ test('caso límite · PA-2 a ~87 m del centro con precisión 5 (límite 85 m): a
 test('recorrido completo por la pantalla: checar dentro de PA-1 y ver "Dentro" según el servidor', async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 24.8047, longitude: -107.4372, accuracy: 6 });
+  // Teléfono en lunes 5-oct-2026 16:00 (horario de campo), un día sin checadas de PA en la base local: lo que se envía
+  // en línea queda con la hora del servidor (otro día), así que repetir la prueba no cambia el estado de ese lunes.
+  await page.clock.setFixedTime(new Date('2026-10-05T16:00:00-07:00'));
+  await page.reload();
+  await expect(page.locator('#pantalla-app')).toBeVisible();
   await page.locator('[data-pestana="inicio"]').click();
-  await page.locator('#boton-principal').click();   // inicio o fin, según lo que ya haya en la base local
-  if (await page.locator('#checada-elegir').isVisible()) await page.locator('#checada-elegir [data-bloque="campo"]').click();
+  await expect(page.locator('#boton-principal-texto')).toHaveText('Iniciar bloque de campo');
+  await page.locator('#boton-principal').click();
   await expect(page.locator('#checada-zona')).toHaveText('Dentro de la zona de Parque Ficticio Uno.');
   await tomarSelfie(page);
   await page.locator('#checada-confirmar').click();
