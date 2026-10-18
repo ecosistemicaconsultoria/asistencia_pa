@@ -6,6 +6,8 @@ import * as api from './api.js';
 import * as sitios from './sitios.js';
 import { TIPOS, ESTADOS, nombreChecada } from './incidencias.js';
 import { tableroDelDia } from './tablero.js';
+import { metricasSemana, semaforo } from './metricas.js';
+import { barrasAsistencia, barrasHoras, lineaZona, horasTexto } from './graficas.js';
 import { armarBandeja, MOTIVOS } from './bandeja.js';
 import { csvNomina } from './reporte.js';
 import { semanasNomina, csvSemanal, lunesDe } from './nomina.js';
@@ -14,7 +16,7 @@ import * as personas from './personas.js';
 import { rangoDelDia, diasDeLaSemana, formatoHoras, partesLocales } from './reglas.js';
 
 const $ = (id) => document.getElementById(id);
-const estado = { perfil: null, filtro: 'pendiente', bandeja: 'pendientes' };
+const estado = { perfil: null, filtro: 'pendiente', bandeja: 'pendientes', tablero: null, porRevisar: null, incidenciasPendientes: null, metricas: null };
 
 const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -59,13 +61,145 @@ async function iniciar() {
   $('filtro-resueltas').addEventListener('click', () => filtrar('resueltas'));
   $('bandeja-pendientes').addEventListener('click', () => filtrarBandeja('pendientes'));
   $('bandeja-revisadas').addEventListener('click', () => filtrarBandeja('revisadas'));
-  $('hoy-actualizar').addEventListener('click', () => { pintarHoy(); pintarBandeja(); pintar(); });
+  $('hoy-actualizar').addEventListener('click', async () => { await Promise.all([pintarHoy(), pintarBandeja(), pintar()]); pintarMetricas(); });
   // Se actualiza solo cada 2 minutos mientras el panel está a la vista (la bandeja no, para no borrar lo que se escribe)
-  setInterval(() => { if (document.visibilityState === 'visible') { pintarHoy(); pintar(); } }, 120_000);
+  setInterval(async () => { if (document.visibilityState === 'visible') { await Promise.all([pintarHoy(), pintar()]); pintarMetricas(); } }, 120_000);
   prepararReportes();
   await sitios.actualizar(r.perfil).catch(() => null);   // nombres de parques (una descarga al día, compartida con la app)
   await Promise.all([pintarHoy(), pintarBandeja(), pintar()]);
+  await pintarMetricas();
   if (r.perfil.rol === 'admin') await personas.preparar(r.perfil, aviso);
+}
+
+// ---------- Métricas de la semana (HU-39) ----------
+const ESTADO_TEXTO = { ok: ['Bien', 'chip--ok'], av: ['Atención', 'chip--aviso'], cr: ['Urgente', 'chip--critico'] };
+function chipEstado(id, est) {
+  const chip = $(id);
+  chip.hidden = !est;
+  if (!est) return;
+  chip.textContent = ESTADO_TEXTO[est][0];
+  chip.className = `chip ${ESTADO_TEXTO[est][1]}`;
+}
+function filasTabla(id, filas) {
+  $(id).querySelector('tbody').replaceChildren(...filas.map((celdas) => {
+    const tr = document.createElement('tr');
+    celdas.forEach((c, i) => {
+      const td = document.createElement(i ? 'td' : 'th');
+      if (!i) td.scope = 'row';
+      if (i) td.className = 'tabla__num';
+      td.textContent = c;
+      tr.append(td);
+    });
+    return tr;
+  }));
+}
+const fechaCorta = (f) => { const [, m, d] = f.split('-').map(Number); return `${d} ${MESES[m - 1]}`; };
+const diaCorto = (f) => `${DIAS[new Date(`${f}T12:00:00Z`).getUTCDay()]} ${Number(f.slice(8))}`;
+
+let pintandoMetricas = null;
+async function pintarMetricas() {
+  if (pintandoMetricas) return pintandoMetricas;
+  pintandoMetricas = (async () => {
+    const p = estado.perfil;
+    const ahora = new Date();
+    const semana = diasDeLaSemana(ahora, zona());
+    const desde = rangoDelDia(new Date(`${semana[0]}T12:00:00Z`), zona()).desde;
+    desde.setUTCDate(desde.getUTCDate() - 49);   // 7 semanas antes del lunes: 8 semanas en total
+    const hasta = rangoDelDia(ahora, zona()).hasta;
+    $('metricas-semana').textContent = `semana del ${fechaCorta(semana[0])} al ${fechaCorta(semana[6])}`;
+    try {
+      const [miembros, horarios, eventos, corregidas, jornada] = await Promise.all([
+        api.miembrosDeOrganizacion(p.organizacionId), api.horariosDeOrganizacion(p.organizacionId),
+        api.eventosDeOrganizacion(p.organizacionId, desde.toISOString(), hasta.toISOString()),
+        api.corregidasDeOrganizacion(p.organizacionId), api.jornadaDeOrganizacion(p.organizacionId, semana[0], semana[6])
+      ]);
+      const m = metricasSemana({ miembros, horarios, eventos, corregidas, jornada, ahora, zona: zona(), config: p.organizacion.config || {} });
+
+      // Indicadores con su estado frente a la meta
+      $('kpi-puntualidad').textContent = m.puntualidad === null ? '—' : `${m.puntualidad}\u202f%`;
+      $('kpi-puntualidad-detalle').textContent = m.calificadas ? `entradas a tiempo · meta ${m.metas.puntualidad}\u202f%` : 'aún no hay entradas que calificar';
+      chipEstado('kpi-puntualidad-estado', semaforo(m.puntualidad, m.metas.puntualidad));
+      $('kpi-horas').textContent = horasTexto(m.minutosSemana).replace(' h', '');
+      $('kpi-horas-meta').textContent = m.horas.length ? ` / ${Math.round((m.metaMinutos * m.horas.length) / 60)} h` : '';
+      $('kpi-zona-semana').textContent = m.dentroDeZona === null ? '—' : `${m.dentroDeZona}\u202f%`;
+      $('kpi-zona-semana-detalle').textContent = m.checadasConZona ? `${m.checadasConZona} checadas con zona · meta ${m.metas.dentroDeZona}\u202f%` : 'aún sin checadas revisadas por zona';
+      chipEstado('kpi-zona-semana-estado', semaforo(m.dentroDeZona, m.metas.dentroDeZona));
+      const pendientes = (estado.porRevisar ?? 0) + (estado.incidenciasPendientes ?? 0);
+      $('kpi-pendientes').textContent = estado.porRevisar === null && estado.incidenciasPendientes === null ? '—' : pendientes;
+      $('kpi-pendientes-detalle').textContent = `${estado.porRevisar ?? 0} por revisar · ${estado.incidenciasPendientes ?? 0} ${estado.incidenciasPendientes === 1 ? 'incidencia' : 'incidencias'}`;
+      chipEstado('kpi-pendientes-estado', pendientes ? 'av' : 'ok');
+
+      // Gráficas + su tabla
+      estado.metricas = m;
+      dibujarGraficas();
+      pintarAtencion();
+      $('metricas-estado').textContent = `Actualizado ${horaCorta(ahora.toISOString())}`;
+    } catch (e) {
+      $('metricas-estado').textContent = api.esErrorDeRed(e) ? 'Sin señal: no se pudieron actualizar las métricas.' : `No se pudieron calcular las métricas: ${e.message}`;
+    }
+  })().finally(() => { pintandoMetricas = null; });
+  return pintandoMetricas;
+}
+// Gráficas al ancho de su tarjeta; se vuelven a dibujar si cambia el ancho (girar el teléfono)
+function dibujarGraficas() {
+  const m = estado.metricas;
+  if (!m) return;
+  const ancho = (id) => Math.max(280, Math.min(640, Math.round($(id).clientWidth || 440)));
+  const dias = m.dias.map((d) => ({ ...d, etiqueta: diaCorto(d.fecha) }));
+  $('grafica-asistencia').replaceChildren(dias.length ? barrasAsistencia(dias, { ancho: ancho('grafica-asistencia') }) : vacio('Aún no hay días con horario esta semana.'));
+  filasTabla('tabla-asistencia', dias.map((d) => [d.etiqueta, d.aTiempo, d.retardo, d.sinChecar, d.programadas]));
+  $('grafica-horas-nota').textContent = `La línea punteada marca la jornada semanal (${Math.round(m.metaMinutos / 60)} h). Solo bloques cerrados.`;
+  $('grafica-horas').replaceChildren(m.horas.length ? barrasHoras(m.horas, m.metaMinutos, { ancho: ancho('grafica-horas') }) : vacio('Nadie tiene horario esta semana.'));
+  filasTabla('tabla-horas', m.horas.map((h) => [h.nombre, horasTexto(h.minutos)]));
+  const semanas = m.semanas.map((s) => ({ ...s, etiqueta: `Semana del ${fechaCorta(s.lunes)}` }));
+  $('grafica-zona').replaceChildren(semanas.some((s) => s.pct !== null) ? lineaZona(semanas, { ancho: ancho('grafica-zona') }) : vacio('Aún no hay checadas revisadas por zona.'));
+  filasTabla('tabla-zona', semanas.map((s) => [fechaCorta(s.lunes), s.dentro, s.checadas, s.pct === null ? '—' : `${s.pct}%`]));
+}
+let anchoPrevio = 0;
+window.addEventListener('resize', () => {
+  const a = window.innerWidth;
+  if (Math.abs(a - anchoPrevio) < 40) return;
+  anchoPrevio = a;
+  clearTimeout(dibujarGraficas.t);
+  dibujarGraficas.t = setTimeout(dibujarGraficas, 150);
+});
+function vacio(texto) {
+  const p = document.createElement('p');
+  p.className = 'secundario chico grafica-vacia';
+  p.textContent = texto;
+  return p;
+}
+// Lo que hay que atender ahora: personas sin checar o con algo por revisar hoy, y los pendientes de las bandejas
+function pintarAtencion() {
+  const items = [];
+  const t = estado.tablero;
+  for (const f of t?.filas || []) {
+    if (f.estado === 'sin_checar') items.push([f.nombre, 'No ha checado su entrada de hoy', 'Sin checar', 'chip--critico', '#seccion-hoy']);
+    else if (f.olvido) items.push([f.nombre, `Bloque de ${f.bloqueAbierto} sin cerrar`, 'Sin cerrar', 'chip--aviso', '#seccion-hoy']);
+    else if (f.estado === 'revisar') items.push([f.nombre, 'Tiene checadas de hoy para revisión', 'Revisar', 'chip--aviso', '#seccion-revision']);
+  }
+  if (estado.porRevisar) items.push([`${estado.porRevisar} ${estado.porRevisar === 1 ? 'checada' : 'checadas'} por revisar`, 'Últimos 30 días', 'Revisión', 'chip--aviso', '#seccion-revision']);
+  if (estado.incidenciasPendientes) items.push([`${estado.incidenciasPendientes} ${estado.incidenciasPendientes === 1 ? 'incidencia' : 'incidencias'} por resolver`, 'Solicitudes de corrección', 'Incidencias', 'chip--aviso', '#seccion-incidencias']);
+  const lista = $('lista-atencion');
+  if (!items.length) {
+    const li = document.createElement('li');
+    li.className = 'lista__fila secundario';
+    li.textContent = 'Nada pendiente por ahora.';
+    return lista.replaceChildren(li);
+  }
+  lista.replaceChildren(...items.map(([titulo, detalle, chip, clase, destino]) => {
+    const li = document.createElement('li');
+    li.className = 'lista__fila';
+    const a = document.createElement('a');
+    a.className = 'atencion__enlace';
+    a.href = destino;
+    const tt = document.createElement('span'); tt.className = 'lista__titulo'; tt.textContent = titulo;
+    const dd = document.createElement('span'); dd.className = 'lista__detalle'; dd.textContent = detalle;
+    a.append(tt, dd);
+    const c = document.createElement('span'); c.className = `chip ${clase}`; c.textContent = chip;
+    li.append(a, c);
+    return li;
+  }));
 }
 
 // ---------- Tablero del día (HU-27) ----------
@@ -93,6 +227,7 @@ async function pintarHoy() {
       ]);
       const catalogo = await sitios.todos(p.organizacionId);
       const t = tableroDelDia({ miembros, horarios, eventos, corregidas, sitios: catalogo, ahora, zona: zona(), config: p.organizacion.config || {} });
+      estado.tablero = t;
       const fecha = fechaHora(ahora.toISOString());
       $('hoy-fecha').textContent = fecha.split(' · ')[0];
       $('hoy-actualizado').textContent = `Actualizado ${horaCorta(ahora.toISOString())}`;
@@ -171,6 +306,7 @@ async function pintarBandeja() {
     const b = armarBandeja({ eventos, revisiones, incidencias });
     $('contador-revisar').textContent = `(${b.porRevisar.length})`;
     $('menu-revisar').textContent = b.porRevisar.length || '';
+    estado.porRevisar = b.porRevisar.length;
     const lista = estado.bandeja === 'pendientes' ? b.porRevisar : b.revisadas;
     $('bandeja-lista').replaceChildren(...lista.map((item) => tarjetaRevision(item, nombreSitio)));
     $('bandeja-vacio').textContent = estado.bandeja === 'pendientes' ? 'No hay checadas por revisar.' : 'No hay checadas revisadas en los últimos 30 días.';
@@ -383,6 +519,7 @@ async function pintar() {
     $('contador-pendientes').textContent = `(${pendientes.length})`;
     $('kpi-incidencias').textContent = pendientes.length;
     $('menu-incidencias').textContent = pendientes.length || '';
+    estado.incidenciasPendientes = pendientes.length;
     const filas = estado.filtro === 'pendiente' ? pendientes
       : await api.incidenciasDeOrganizacion(org, { desdeISO: new Date(Date.now() - 30 * 864e5).toISOString() });
     lista.replaceChildren(...filas.map(tarjeta));

@@ -38,6 +38,7 @@
 
       <nav class="panel__menu" aria-label="Secciones del panel">
         <a href="#seccion-hoy">Hoy</a>
+        <a href="#seccion-metricas">Métricas</a>
         <a href="#seccion-revision">Revisión <span class="panel__cuenta" id="menu-revisar"></span></a>
         <a href="#seccion-incidencias">Incidencias <span class="panel__cuenta" id="menu-incidencias"></span></a>
         <a href="#seccion-reportes">Reportes</a>
@@ -75,6 +76,43 @@
               <p>Alertas en tu teléfono aunque la app esté cerrada ("sin checar" y bloques sin cerrar): en la app, Perfil › Recordatorio de salida › Activar.</p>
             </details>
           </article>
+        </section>
+
+        <!-- Métricas de la semana (HU-39) -->
+        <section class="vista panel__seccion" id="seccion-metricas" aria-labelledby="metricas-titulo">
+          <div class="panel__cabecera">
+            <h2 class="panel__titulo" id="metricas-titulo">Métricas · <span id="metricas-semana">esta semana</span></h2>
+            <span class="secundario chico" id="metricas-estado" role="status"></span>
+          </div>
+          <div class="kpis">
+            <article class="tarjeta kpi"><p class="kpi__etiqueta">Puntualidad <span class="chip" id="kpi-puntualidad-estado" hidden></span></p><p class="kpi__valor" id="kpi-puntualidad">—</p><p class="kpi__detalle" id="kpi-puntualidad-detalle">entradas a tiempo esta semana</p></article>
+            <article class="tarjeta kpi"><p class="kpi__etiqueta">Horas registradas</p><p class="kpi__valor"><span id="kpi-horas">—</span><span class="kpi__de" id="kpi-horas-meta"></span></p><p class="kpi__detalle">bloques cerrados esta semana (vista oficial)</p></article>
+            <article class="tarjeta kpi"><p class="kpi__etiqueta">Dentro de zona <span class="chip" id="kpi-zona-semana-estado" hidden></span></p><p class="kpi__valor" id="kpi-zona-semana">—</p><p class="kpi__detalle" id="kpi-zona-semana-detalle">checadas de esta semana</p></article>
+            <article class="tarjeta kpi"><p class="kpi__etiqueta">Pendientes <span class="chip" id="kpi-pendientes-estado" hidden></span></p><p class="kpi__valor" id="kpi-pendientes">—</p><p class="kpi__detalle" id="kpi-pendientes-detalle">revisiones e incidencias</p></article>
+          </div>
+          <div class="graficas">
+            <article class="tarjeta grafica-tarjeta">
+              <h3 class="grafica-tarjeta__titulo">Asistencia por día</h3>
+              <ul class="leyenda" aria-hidden="true"><li><i class="leyenda__marca g-ok"></i>A tiempo</li><li><i class="leyenda__marca g-aviso"></i>Retardo</li><li><i class="leyenda__marca g-critico"></i>Sin checar</li></ul>
+              <div id="grafica-asistencia"></div>
+              <details class="ayuda"><summary>Ver como tabla</summary><div class="tabla__marco"><table class="tabla tabla--datos" id="tabla-asistencia"><thead><tr><th scope="col">Día</th><th scope="col" class="tabla__num">A tiempo</th><th scope="col" class="tabla__num">Retardo</th><th scope="col" class="tabla__num">Sin checar</th><th scope="col" class="tabla__num">Con horario</th></tr></thead><tbody></tbody></table></div></details>
+            </article>
+            <article class="tarjeta grafica-tarjeta">
+              <h3 class="grafica-tarjeta__titulo">Horas de la semana por persona</h3>
+              <p class="secundario chico" id="grafica-horas-nota">La línea punteada marca la jornada semanal.</p>
+              <div id="grafica-horas"></div>
+              <details class="ayuda"><summary>Ver como tabla</summary><div class="tabla__marco"><table class="tabla tabla--datos" id="tabla-horas"><thead><tr><th scope="col">Persona</th><th scope="col" class="tabla__num">Horas</th></tr></thead><tbody></tbody></table></div></details>
+            </article>
+            <article class="tarjeta grafica-tarjeta">
+              <h3 class="grafica-tarjeta__titulo">Checadas dentro de zona · 8 semanas</h3>
+              <div id="grafica-zona"></div>
+              <details class="ayuda"><summary>Ver como tabla</summary><div class="tabla__marco"><table class="tabla tabla--datos" id="tabla-zona"><thead><tr><th scope="col">Semana del</th><th scope="col" class="tabla__num">Dentro</th><th scope="col" class="tabla__num">Checadas</th><th scope="col" class="tabla__num">%</th></tr></thead><tbody></tbody></table></div></details>
+            </article>
+            <article class="tarjeta grafica-tarjeta">
+              <h3 class="grafica-tarjeta__titulo">Requiere atención</h3>
+              <ul class="lista atencion" id="lista-atencion"></ul>
+            </article>
+          </div>
         </section>
 
         <!-- Bandeja de revisión (HU-23) -->

@@ -75,7 +75,19 @@ app cerrada y el CSV separa horas ordinarias y extra. Plan y decisiones a valida
 | ☑ v30 | UX-01 | Revisión de usabilidad (UI/UX) | Checada: estado de ubicación arriba, detalles plegables y confirmar fijo abajo con el motivo si aún no se puede; acciones delicadas (baja, cerrar sesión, rechazar) en contorno y la baja dentro de Editar; misma acción, mismo color; días futuros con contraste AA; efecto al tocar y respeto a «reducir movimiento»; íconos SVG (sin emojis); ayudas del panel plegadas |
 | ☑ v31 | UX-02 | Nombre y logotipo propios: «Presente» | Ícono neutral (pin con palomita, logotipo B elegido por el PO) con los colores de la marca; nombre «Presente» con el subtítulo «Registro de jornada» en acceso, instalación, panel y guía con QR. Pendiente: revisar el nombre en Marcanet (IMPI, clase 9) antes de registrarlo |
 
-## Sprint 5 en adelante (referencia)
+## Sprint 5 · Panel de personal visual
+
+**Decisiones del PO (oct-2026):** se conserva la paleta de Ecosistémica y se adoptan los patrones de tablero que propone
+la guía UI/UX Pro Max; altas, bajas y revisiones siguen en el rol Administración; Dirección es la revisora final de todas
+las personas (incluida quien administra); el punto de ubicación NO se arrastra (es la evidencia): solo mapa con polígonos.
+
+| Estado | ID | Historia | Criterios de aceptación |
+|---|---|---|---|
+| ☑ v32 | HU-39 | Métricas de la semana en el panel | Indicadores con estado frente a la meta (puntualidad, horas de la vista oficial, dentro de zona, pendientes); asistencia por día, horas por persona contra la jornada semanal y dentro de zona en 8 semanas; lista "Requiere atención"; cada gráfica con leyenda, descripción por marca y tabla. Metas configurables: `meta_puntualidad_pct` (90), `meta_dentro_zona_pct` (90) |
+| ☐ | HU-25 | Mapa con polígonos (Leaflet) | En el panel, los parques con su perímetro sobre un mapa real y las checadas dentro/fuera; sin conexión el asesor conserva el mapa esquemático |
+| ☐ | — | Pendiente de Parques Alegres | Cómo opera "Dirección como revisora final": por ahora, Dirección con cuenta de Coordinación revisa a todos (nadie revisa lo propio). Si se quiere doble revisión (Administración y luego Dirección), es una historia nueva |
+
+## Sprint 6 en adelante (referencia)
 
 HU-25 mapa de visitas (Leaflet, solo panel) · HU-30 alertas · HU-32 horas ordinarias/extras para nómina · HU-34 respaldos y conservación ·
 HU-36 piloto con 5 asesores · HU-11 marca por organización · HU-38 manual de réplica para otras IAP.

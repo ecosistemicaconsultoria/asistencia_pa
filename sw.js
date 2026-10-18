@@ -34,8 +34,9 @@
 // asis-2026-10-04-v29 · HU-15b y HU-30 avisos con la app cerrada (Web Push): recordatorio de salida al asesor y alertas "sin checar" y "sin cerrar" a coordinación; registro del teléfono en Perfil y "Probar aviso".
 // asis-2026-10-18-v30 · UX-01 revisión de usabilidad: checada con confirmar fijo abajo y el motivo cuando aún no se puede, ubicación plegable, acciones delicadas discretas, contraste de días futuros, «reducir movimiento», íconos SVG y ayudas del panel plegadas.
 // asis-2026-10-18-v31 · UX-02 nombre y logotipo propios: «Presente» (pin con palomita) en íconos, acceso, instalación, panel y guía con QR.
+// asis-2026-10-18-v32 · HU-39 métricas de la semana en el panel: indicadores con estado, gráficas SVG (asistencia por día, horas por persona, dentro de zona en 8 semanas) con tabla, y lista "Requiere atención".
 
-const CACHE_VERSION = 'asis-2026-10-18-v31';
+const CACHE_VERSION = 'asis-2026-10-18-v32';
 
 const CASCARON = [
   './',
@@ -61,6 +62,8 @@ const CASCARON = [
   './panel.html',
   './js/panel.js',
   './js/tablero.js',
+  './js/metricas.js',
+  './js/graficas.js',
   './js/bandeja.js',
   './reporte.html',
   './css/reporte.css',

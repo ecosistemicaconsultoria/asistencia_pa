@@ -27,6 +27,9 @@
   --aviso-fondo: #FDF1CC;  --aviso-texto: #6B4E00;
   --critico-fondo: #FBE3E2;  --critico-texto: #9B1C19;
   --neutro-fondo: #ECE7DA;  --neutro-texto: #5A4A2E;
+  /* Estados en gráficas: versiones más firmes de ok/aviso/crítico, validadas para distinguirse con daltonismo
+     (el amarillo #F4B400 no alcanza sobre blanco). Siempre con leyenda y etiquetas de texto. */
+  --serie-ok: #3F8F44;  --serie-aviso: #D49A00;  --serie-critico: #C62828;
 
   --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
@@ -341,7 +344,7 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 
 /* Tablero del día (HU-27) */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
-@media (max-width: 479px) { .kpis { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 479px) { .kpis { grid-template-columns: 1fr 1fr; } .kpi__valor { font-size: 24px; white-space: nowrap; } .kpi__de { font-size: 14px; } }
 .kpi { display: flex; flex-direction: column; gap: 2px; }
 .kpi__etiqueta { font-size: 13px; font-weight: 500; color: var(--follaje); }
 .kpi__valor { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 32px; font-weight: 500; line-height: 1.15; color: var(--grafito); }
@@ -370,6 +373,38 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
   .tabla tbody td[colspan] { grid-column: 1 / -1; }
 }
 .tabla thead .tabla__num { font-family: var(--sans); }
+
+/* Métricas (HU-39): patrones de tablero (indicador con estado, gráficas, lista de atención) */
+.kpi__etiqueta { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.kpi__etiqueta .chip { font-size: 12px; padding: 2px 8px; }
+.graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 12px; align-items: start; }
+.grafica-tarjeta { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.grafica-tarjeta__titulo { font-size: 15px; font-weight: 600; }
+.grafica { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--sans); }
+.grafica-vacia { padding: 24px 0; text-align: center; }
+.grafica .g-rejilla { stroke: var(--linea); stroke-width: 1; }
+.grafica .g-eje { font-size: 13px; fill: var(--follaje); }
+.grafica .g-eje--nombre { fill: var(--grafito); }
+.grafica .g-valor { font: 500 13px var(--mono); fill: var(--grafito); }
+.grafica .g-serie { fill: var(--agua); }
+.grafica .g-linea { fill: none; stroke: var(--agua); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafica .g-punto { fill: var(--agua); stroke: var(--blanco); stroke-width: 2; }
+.grafica .g-toque { fill: transparent; }
+.grafica .g-meta { stroke: var(--tierra); stroke-width: 2; stroke-dasharray: 5 4; }
+.grafica .g-meta-texto { font-size: 13px; font-weight: 600; fill: var(--tierra); }
+.g-ok { fill: var(--serie-ok); background: var(--serie-ok); }
+.g-aviso { fill: var(--serie-aviso); background: var(--serie-aviso); }
+.g-critico { fill: var(--serie-critico); background: var(--serie-critico); }
+.grafica rect:hover, .grafica .g-toque:hover { opacity: .85; }
+.leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--follaje); }
+.leyenda li { display: inline-flex; align-items: center; gap: 6px; }
+.leyenda__marca { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.tabla--datos { font-size: 13px; }
+@media (max-width: 599px) { .tabla--datos thead { position: static; width: auto; height: auto; overflow: visible; clip: auto; } .tabla--datos tbody tr { display: table-row; padding: 0; } .tabla--datos tbody tr > * { padding: 6px 8px; border-bottom: 1px solid var(--linea); } }
+.atencion .lista__fila { align-items: center; }
+.atencion__enlace { display: flex; flex-direction: column; gap: 2px; min-height: var(--tactil); justify-content: center; color: inherit; text-decoration: none; flex: 1; min-width: 0; }
+.atencion__enlace:hover .lista__titulo { text-decoration: underline; }
+.atencion .chip { white-space: nowrap; }
 
 /* Bandeja de revisión (HU-23) */
 .revision__motivos { display: flex; flex-wrap: wrap; gap: 6px; }
