@@ -20,7 +20,8 @@ error, las checadas, personas o parques de otra. Esto lo prueban automáticament
 | Actualizaciones | Llegan a todas al mismo tiempo | Hay que publicarlas en cada proyecto |
 | Cuándo | Por omisión | Si la IAP pide su propia cuenta, contrato o lugar de los datos |
 
-**Pendiente con Fundación GC1:** confirmar el modelo por IAP y quién es responsable del tratamiento de datos en cada una.
+**Decisión (oct-2026): opción A** para todas las IAP. El plan Pro de Supabase (respaldo diario) se contratará más adelante, antes del 1 de enero de 2027.
+**Pendiente con Fundación GC1:** quién es responsable del tratamiento de datos en cada IAP.
 
 ---
 
