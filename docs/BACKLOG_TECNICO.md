@@ -73,7 +73,7 @@ app cerrada y el CSV separa horas ordinarias y extra. Plan y decisiones a valida
 | ☑ v29 | HU-15b | Recordatorio con la app cerrada (Web Push) | Llega con la app cerrada (Android; iPhone con la app instalada); una vez por bloque y día |
 | ☑ v29 | HU-30 | Alertas a coordinación | "Sin checar" y bloques sin cerrar, en el panel y por notificación; horarios configurables |
 | ☑ v30 | UX-01 | Revisión de usabilidad (UI/UX) | Checada: estado de ubicación arriba, detalles plegables y confirmar fijo abajo con el motivo si aún no se puede; acciones delicadas (baja, cerrar sesión, rechazar) en contorno y la baja dentro de Editar; misma acción, mismo color; días futuros con contraste AA; efecto al tocar y respeto a «reducir movimiento»; íconos SVG (sin emojis); ayudas del panel plegadas |
-| ☐ | UX-02 | Logotipo propio de la app | Ícono neutral (sirve a cualquier organización), con los colores de la marca; reemplaza el de Ecosistémica en ícono, acceso y guía de instalación. Propuestas A/B/C presentadas (oct-2026), pendiente elección del PO |
+| ☑ v31 | UX-02 | Nombre y logotipo propios: «Presente» | Ícono neutral (pin con palomita, logotipo B elegido por el PO) con los colores de la marca; nombre «Presente» con el subtítulo «Registro de jornada» en acceso, instalación, panel y guía con QR. Pendiente: revisar el nombre en Marcanet (IMPI, clase 9) antes de registrarlo |
 
 ## Sprint 5 en adelante (referencia)
 

@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Asistencia · Registro de jornada</title>
+  <title>Presente · Registro de jornada</title>
   <meta name="description" content="Registro electrónico de jornada laboral (LFT art. 132, fr. XXXIV).">
   <meta name="theme-color" content="#14503A">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Asistencia">
+  <meta name="apple-mobile-web-app-title" content="Presente">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -30,7 +30,10 @@
     <!-- Acceso (HU-08) -->
     <section class="pantalla-centrada" id="pantalla-acceso" hidden>
       <img class="logo" src="assets/icon-192.png" alt="" width="96" height="96">
-      <h1 class="encabezado__titulo">Registro de jornada</h1>
+      <div class="marca">
+        <h1 class="marca__nombre">Presente</h1>
+        <p class="marca__sub">Registro de jornada</p>
+      </div>
       <p class="secundario centrado">Entra con el correo y la contraseña que te dio coordinación.</p>
       <form class="formulario tarjeta" id="form-acceso" novalidate>
         <div class="aviso aviso--critico" id="acceso-error" role="alert" hidden></div>

@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Asistencia · Registro de jornada",
-  "short_name": "Asistencia",
+  "name": "Presente · Registro de jornada",
+  "short_name": "Presente",
   "description": "Registro electrónico de jornada laboral (LFT art. 132, fr. XXXIV).",
   "lang": "es-MX",
   "dir": "ltr",

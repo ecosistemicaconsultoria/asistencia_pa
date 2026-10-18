@@ -105,7 +105,11 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
   text-align: center;
 }
 .pantalla-centrada > .tarjeta, .pantalla-centrada > .lista-opciones, .pantalla-centrada > .boton { width: 100%; }
-.logo { width: 96px; height: 96px; border-radius: 24px; }
+.logo { width: 96px; height: 96px; border-radius: 24px; box-shadow: var(--sombra); }
+/* Nombre de la app en la pantalla de acceso */
+.marca { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.marca__nombre { font-size: 30px; font-weight: 600; line-height: 1.1; color: var(--verde); letter-spacing: -.01em; }
+.marca__sub { font-size: 15px; color: var(--follaje); }
 .centrado { text-align: center; }
 .encabezado {
   display: flex;

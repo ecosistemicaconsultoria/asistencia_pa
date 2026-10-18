@@ -1,4 +1,4 @@
-# App de Asistencia
+# Presente · App de registro de jornada
 
 Registro electrónico de jornada laboral (LFT art. 132, fr. XXXIV) para personal de campo de instituciones de asistencia privada.
 PWA en JavaScript puro con Supabase (Postgres + PostGIS, Auth, Storage y RLS).
