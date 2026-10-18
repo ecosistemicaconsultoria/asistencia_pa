@@ -547,3 +547,56 @@ export async function probarAviso() {
   }
   return data;
 }
+
+// ---------- Respaldos (HU-34): solo administración (RLS) ----------
+// Lee una tabla completa dentro de un rango de tiempo, en páginas de 1000 (tope de Supabase).
+async function todasLasFilas(tabla, columnas, organizacionId, campoTiempo, desdeISO, hastaISO) {
+  const PAGINA = 1000;
+  const filas = [];
+  for (let desde = 0; ; desde += PAGINA) {
+    const { data, error } = await conLimite(cliente
+      .from(tabla)
+      .select(columnas)
+      .eq('organizacion_id', organizacionId)
+      .gte(campoTiempo, desdeISO)
+      .lt(campoTiempo, hastaISO)
+      .order(campoTiempo)
+      .order('id')
+      .range(desde, desde + PAGINA - 1), 30000);
+    if (error) throw error;
+    filas.push(...data);
+    if (data.length < PAGINA) break;
+  }
+  return filas;
+}
+
+export async function datosDeRespaldo(organizacionId, desdeISO, hastaISO) {
+  const [eventos, revisiones, incidencias, bitacora, personas] = await Promise.all([
+    todasLasFilas('eventos_jornada', 'id, miembro_id, tipo, bloque, modalidad, hora_dispositivo, hora_servidor, hora_efectiva, desfase_seg, capturado_sin_conexion, lat, lon, precision_m, sitio_id, distancia_sitio_m, dentro_geocerca, selfie_path, justificacion, estado_revision, motivos_revision, origen, incidencia_id, version_app',
+      organizacionId, 'hora_efectiva', desdeISO, hastaISO),
+    todasLasFilas('revisiones', 'id, evento_id, decision, comentario, revisado_por, revisado_en', organizacionId, 'revisado_en', desdeISO, hastaISO),
+    todasLasFilas('incidencias', 'id, miembro_id, evento_original_id, tipo, tipo_evento_propuesto, bloque_propuesto, hora_propuesta, motivo, estado, resuelta_por, resuelta_en, comentario_resolucion, creada_en',
+      organizacionId, 'creada_en', desdeISO, hastaISO),
+    todasLasFilas('bitacora', 'id, tabla, registro_id, accion, actor, datos, en', organizacionId, 'en', desdeISO, hastaISO),
+    personasDeOrganizacion(organizacionId)
+  ]);
+  return { eventos, revisiones, incidencias, bitacora, personas };
+}
+
+// Constancia del respaldo (migración 0006): el servidor fija quién y cuándo.
+export async function registrarRespaldo(organizacionId, { desde, hasta, archivos, sha256Zip }) {
+  const { error } = await conLimite(cliente.from('respaldos')
+    .insert({ organizacion_id: organizacionId, desde, hasta, archivos, sha256_zip: sha256Zip }), 15000);
+  if (error) throw error;
+}
+
+export async function respaldosDeOrganizacion(organizacionId) {
+  const { data, error } = await conLimite(cliente
+    .from('respaldos')
+    .select('id, desde, hasta, archivos, sha256_zip, hecho_en, autor:miembros!hecho_por(nombre_completo)')
+    .eq('organizacion_id', organizacionId)
+    .order('hecho_en', { ascending: false })
+    .limit(12), 15000);
+  if (error) throw error;
+  return data || [];
+}

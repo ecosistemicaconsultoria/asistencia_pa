@@ -9,6 +9,7 @@ import { tableroDelDia } from './tablero.js';
 import { metricasSemana, semaforo } from './metricas.js';
 import { barrasAsistencia, barrasHoras, lineaZona, horasTexto } from './graficas.js';
 import { dibujarMapa, describirChecada, claseChecada } from './mapa.js';
+import { armarRespaldo } from './respaldo.js';
 import { armarBandeja, MOTIVOS } from './bandeja.js';
 import { csvNomina } from './reporte.js';
 import { semanasNomina, csvSemanal, lunesDe } from './nomina.js';
@@ -17,7 +18,7 @@ import * as personas from './personas.js';
 import { rangoDelDia, diasDeLaSemana, formatoHoras, partesLocales } from './reglas.js';
 
 const $ = (id) => document.getElementById(id);
-const estado = { perfil: null, filtro: 'pendiente', bandeja: 'pendientes', tablero: null, porRevisar: null, incidenciasPendientes: null, metricas: null };
+const estado = { perfil: null, filtro: 'pendiente', bandeja: 'pendientes', tablero: null, porRevisar: null, incidenciasPendientes: null, metricas: null, respaldoAtrasado: null };
 
 const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -70,7 +71,11 @@ async function iniciar() {
   await Promise.all([pintarHoy(), pintarBandeja(), pintar()]);
   await pintarMetricas();
   prepararMapa();
-  if (r.perfil.rol === 'admin') await personas.preparar(r.perfil, aviso);
+  if (r.perfil.rol === 'admin') {
+    await personas.preparar(r.perfil, aviso);
+    await prepararRespaldos();
+    pintarAtencion();
+  }
 }
 
 // ---------- Métricas de la semana (HU-39) ----------
@@ -181,6 +186,7 @@ function pintarAtencion() {
     else if (f.estado === 'revisar') items.push([f.nombre, 'Tiene checadas de hoy para revisión', 'Revisar', 'chip--aviso', '#seccion-revision']);
   }
   if (estado.porRevisar) items.push([`${estado.porRevisar} ${estado.porRevisar === 1 ? 'checada' : 'checadas'} por revisar`, 'Últimos 30 días', 'Revisión', 'chip--aviso', '#seccion-revision']);
+  if (estado.respaldoAtrasado) items.push([estado.respaldoAtrasado, 'Descarga el respaldo y guárdalo fuera de Supabase', 'Respaldo', 'chip--aviso', '#seccion-respaldos']);
   if (estado.incidenciasPendientes) items.push([`${estado.incidenciasPendientes} ${estado.incidenciasPendientes === 1 ? 'incidencia' : 'incidencias'} por resolver`, 'Solicitudes de corrección', 'Incidencias', 'chip--aviso', '#seccion-incidencias']);
   const lista = $('lista-atencion');
   if (!items.length) {
@@ -241,6 +247,92 @@ async function pintarMapa() {
     }));
   } catch (e) {
     $('mapa-estado').textContent = api.esErrorDeRed(e) ? 'Sin señal: el mapa necesita conexión.' : e.message;
+  }
+}
+
+// ---------- Respaldos (HU-34, solo administración) ----------
+const DIAS_ENTRE_RESPALDOS = 31;   // por omisión; configurable con config.dias_entre_respaldos
+const sumarDias = (f, n) => { const d = new Date(`${f}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+async function prepararRespaldos() {
+  $('seccion-respaldos').hidden = false;
+  $('menu-respaldos').hidden = false;
+  // Por omisión: el mes anterior completo
+  const hoy = partesLocales(new Date(), zona()).fecha;
+  const finMesAnterior = sumarDias(`${hoy.slice(0, 8)}01`, -1);
+  $('respaldo-desde').value = `${finMesAnterior.slice(0, 8)}01`;
+  $('respaldo-hasta').value = finMesAnterior;
+  $('respaldo-desde').max = $('respaldo-hasta').max = hoy;
+  $('respaldo-descargar').addEventListener('click', descargarRespaldo);
+  await pintarRespaldos();
+}
+async function pintarRespaldos() {
+  const p = estado.perfil;
+  try {
+    const lista = await api.respaldosDeOrganizacion(p.organizacionId);
+    const ul = $('respaldos-lista');
+    if (!lista.length) {
+      const li = document.createElement('li');
+      li.className = 'lista__fila secundario';
+      li.textContent = 'Todavía no hay respaldos.';
+      ul.replaceChildren(li);
+    } else {
+      ul.replaceChildren(...lista.map((x) => {
+        const li = document.createElement('li');
+        li.className = 'lista__fila respaldo';
+        const izq = document.createElement('span');
+        const t = document.createElement('span'); t.className = 'lista__titulo'; t.textContent = `${fechaCorta(x.desde)} – ${fechaCorta(x.hasta)} ${x.hasta.slice(0, 4)}`;
+        const d = document.createElement('span'); d.className = 'lista__detalle';
+        d.textContent = `${fechaHora(x.hecho_en)} · ${x.autor?.nombre_completo || ''} · ${(x.archivos || []).reduce((s, a) => s + (a.filas || 0), 0)} filas`;
+        izq.append(t, document.createElement('br'), d);
+        const h = document.createElement('code'); h.className = 'respaldo__huella mono'; h.title = `SHA-256 del ZIP: ${x.sha256_zip}`; h.textContent = x.sha256_zip.slice(0, 12);
+        li.append(izq, h);
+        return li;
+      }));
+    }
+    const dias = Number(p.organizacion.config?.dias_entre_respaldos ?? DIAS_ENTRE_RESPALDOS);
+    const ultimo = lista[0] ? new Date(lista[0].hecho_en) : null;
+    const transcurridos = ultimo ? Math.floor((Date.now() - ultimo.getTime()) / 864e5) : null;
+    estado.respaldoAtrasado = !ultimo ? 'Aún no hay ningún respaldo' : transcurridos > dias ? `Último respaldo hace ${transcurridos} días` : null;
+  } catch (e) {
+    $('respaldo-estado').textContent = api.esErrorDeRed(e) ? 'Sin señal: no se pudo leer la lista de respaldos.' : `No se pudo leer la lista de respaldos: ${e.message}`;
+  }
+}
+async function descargarRespaldo() {
+  const p = estado.perfil;
+  const boton = $('respaldo-descargar');
+  const error = $('respaldo-error');
+  const mostrar = (t) => { error.textContent = t || ''; error.hidden = !t; };
+  const desde = $('respaldo-desde').value, hasta = $('respaldo-hasta').value;
+  if (!desde || !hasta) return mostrar('Elige el periodo (desde y hasta).');
+  if (desde > hasta) return mostrar('La fecha "desde" debe ser anterior o igual a "hasta".');
+  mostrar('');
+  boton.disabled = true;
+  boton.setAttribute('aria-busy', 'true');
+  $('respaldo-estado').textContent = 'Preparando el respaldo…';
+  try {
+    const inicio = rangoDelDia(new Date(`${desde}T12:00:00Z`), zona()).desde;
+    const fin = rangoDelDia(new Date(`${hasta}T12:00:00Z`), zona()).hasta;
+    const [datos, catalogo] = await Promise.all([api.datosDeRespaldo(p.organizacionId, inicio.toISOString(), fin.toISOString()), sitios.todos(p.organizacionId)]);
+    const r = await armarRespaldo({ ...datos, sitios: catalogo }, { organizacion: p.organizacion.nombre, desde, hasta, por: p.nombre, zona: zona() });
+    // Primero la constancia (quién, cuándo, huellas); luego la descarga
+    await api.registrarRespaldo(p.organizacionId, { desde, hasta, archivos: r.archivos, sha256Zip: r.sha256Zip });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([r.zip], { type: 'application/zip' }));
+    a.download = `respaldo_${p.organizacion.slug || 'organizacion'}_${desde}_${hasta}.zip`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+    const filas = r.archivos.reduce((s, x) => s + x.filas, 0);
+    $('respaldo-estado').textContent = `Respaldo listo: ${filas} filas en ${r.archivos.length} archivos. Huella del ZIP: ${r.sha256Zip.slice(0, 12)}…`;
+    await pintarRespaldos();
+    pintarAtencion();
+  } catch (e) {
+    $('respaldo-estado').textContent = '';
+    mostrar(api.esErrorDeRed(e) ? 'Sin señal: no se pudo preparar el respaldo. Intenta con conexión.' : `No se pudo preparar el respaldo: ${e.message}`);
+  } finally {
+    boton.disabled = false;
+    boton.removeAttribute('aria-busy');
   }
 }
 

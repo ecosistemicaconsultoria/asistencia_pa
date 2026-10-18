@@ -37,8 +37,9 @@
 // asis-2026-10-18-v32 · HU-39 métricas de la semana en el panel: indicadores con estado, gráficas SVG (asistencia por día, horas por persona, dentro de zona en 8 semanas) con tabla, y lista "Requiere atención".
 // asis-2026-10-18-v33 · HU-25 mapa del panel (Leaflet + OpenStreetMap): perímetros de los parques y checadas del día dentro/fuera de zona, sin teletrabajo ni domicilios.
 // asis-2026-10-18-v34 · UX-02 corrección: íconos con nombre de archivo nuevo (presente-*.png) para que no se reutilice el logotipo anterior guardado; avisos con el nombre «Presente».
+// asis-2026-10-18-v35 · HU-34 respaldos: ZIP mensual con CSV por tabla y huellas SHA-256, constancia inalterable (migración 0006) y aviso si no hay respaldo reciente.
 
-const CACHE_VERSION = 'asis-2026-10-18-v34';
+const CACHE_VERSION = 'asis-2026-10-18-v35';
 
 const CASCARON = [
   './',
@@ -66,6 +67,9 @@ const CASCARON = [
   './js/tablero.js',
   './js/metricas.js',
   './js/graficas.js',
+  './js/mapa.js',
+  './js/respaldo.js',
+  './js/zip.js',
   './js/bandeja.js',
   './reporte.html',
   './css/reporte.css',

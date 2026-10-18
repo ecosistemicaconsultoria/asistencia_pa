@@ -46,6 +46,7 @@
         <a href="#seccion-incidencias">Incidencias <span class="panel__cuenta" id="menu-incidencias"></span></a>
         <a href="#seccion-reportes">Reportes</a>
         <a href="#seccion-personas" id="menu-personas" hidden>Personas</a>
+        <a href="#seccion-respaldos" id="menu-respaldos" hidden>Respaldos</a>
       </nav>
 
       <main class="contenido">
@@ -237,6 +238,31 @@
           <p class="secundario chico">Para instalar la app: <a id="personas-guia" href="instalar.html">guía de una página con código QR</a> (imprímela o compártela).</p>
           <p class="secundario chico" id="personas-nota"></p>
           <div class="panel__lista" id="personas-lista" aria-live="polite"></div>
+        </section>
+
+        <!-- Respaldos (HU-34, solo administración) -->
+        <section class="vista panel__seccion" id="seccion-respaldos" aria-labelledby="respaldos-titulo" hidden>
+          <div class="panel__cabecera">
+            <h2 class="panel__titulo" id="respaldos-titulo">Respaldos</h2>
+          </div>
+          <article class="tarjeta formulario">
+            <p class="secundario chico">Descarga un ZIP con checadas, revisiones, incidencias, bitácora y personas del periodo, con la huella de cada archivo. Guárdalo fuera de Supabase (por ejemplo, en la unidad compartida de la organización). Recomendado: cada mes.</p>
+            <div class="campo__fila respaldos__fechas">
+              <label class="campo"><span class="campo__etiqueta">Desde</span><input class="campo__entrada mono" id="respaldo-desde" type="date"></label>
+              <label class="campo"><span class="campo__etiqueta">Hasta</span><input class="campo__entrada mono" id="respaldo-hasta" type="date"></label>
+            </div>
+            <p class="aviso aviso--critico" id="respaldo-error" role="alert" hidden></p>
+            <button class="boton boton--lleno boton--ancho" type="button" id="respaldo-descargar">Descargar respaldo (ZIP)</button>
+            <p class="secundario chico" id="respaldo-estado" role="status"></p>
+            <details class="ayuda"><summary>Más información</summary>
+              <p>Cada respaldo queda registrado (quién, cuándo, periodo y huella SHA-256) y no se puede borrar. El LEEME del ZIP explica cómo comprobar que un archivo no cambió.</p>
+              <p>Las selfies no van en el ZIP (son fotos); quedan guardadas en Supabase. La copia completa de la base la hace Supabase en el plan Pro (respaldo diario).</p>
+            </details>
+          </article>
+          <article class="tarjeta">
+            <h3 class="grafica-tarjeta__titulo">Últimos respaldos</h3>
+            <ul class="lista" id="respaldos-lista"></ul>
+          </article>
         </section>
 
       </main>

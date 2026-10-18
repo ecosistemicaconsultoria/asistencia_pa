@@ -142,7 +142,7 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
   const miembrosSim = () => cuentas.flatMap((u) => u.miembros.map((m) => ({ ...m, user_id: u.id })));
   const horarios = horarioAsesor.map((h, i) => ({ id: `hhhhhhhh-0000-0000-0000-${String(i).padStart(12, '0')}`, organizacion_id: ORGS.pa.id,
     miembro_id: 'aaaaaaaa-0000-0000-0000-000000000001', ...h }));
-  const estado = { sinRed: false, recibidos: [], selfies: [], incidencias, revisiones, firmadas: [], cuentas, horarios, bitacora: [], suscripciones: [], pruebasAviso: 0 };
+  const estado = { sinRed: false, recibidos: [], selfies: [], incidencias, revisiones, firmadas: [], cuentas, horarios, bitacora: [], suscripciones: [], pruebasAviso: 0, respaldos: [] };
   const deToken = (req) => usuarioDeToken(req, cuentas);
   const orgDe = (clave) => ORGS[clave].id;
   const claveOrg = (id) => Object.keys(ORGS).find((k) => ORGS[k].id === id);
@@ -173,7 +173,7 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
     },
     actualizarUsuario: async (uid, { contrasena, metadata }) => { const u = cuentas.find((x) => x.id === uid); u.clave = contrasena; u.metadata = { ...u.metadata, ...metadata }; },
     bloquearUsuario: async (uid, bloquear) => { cuentas.find((x) => x.id === uid).bloqueada = bloquear; },
-    registrar: async (fila) => { estado.bitacora.push(fila); }
+    registrar: async (fila) => { estado.bitacora.push({ id: estado.bitacora.length + 1, en: new Date().toISOString(), ...fila }); }
   };
   // Domicilio ficticio del asesor de prueba: RLS solo se lo muestra a él (y a coordinación).
   const domicilio = { ...sitiosFicticios('pa', 1, 'D')[0], id: 'dddddddd-dddd-0000-0000-000000000001', clave_externa: null,
@@ -480,8 +480,10 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
           if (f?.startsWith('eq.')) filas = filas.filter((i) => i[campo] === f.slice(3));
           if (f?.startsWith('neq.')) filas = filas.filter((i) => i[campo] !== f.slice(4));
         }
-        const desde = url.searchParams.get('creada_en');
-        if (desde?.startsWith('gte.')) filas = filas.filter((i) => i.creada_en >= desde.slice(4));
+        for (const f of url.searchParams.getAll('creada_en')) {
+          if (f.startsWith('gte.')) filas = filas.filter((i) => i.creada_en >= f.slice(4));
+          if (f.startsWith('lt.')) filas = filas.filter((i) => new Date(i.creada_en) < new Date(f.slice(3)));
+        }
         const asc = /creada_en\.asc/.test(url.searchParams.get('order') || '');
         filas = [...filas].sort((a, b) => (asc ? 1 : -1) * a.creada_en.localeCompare(b.creada_en));
         const nombre = (id) => (id ? { nombre_completo: miembrosSim().find((m) => m.id === id)?.nombre_completo } : null);
@@ -524,6 +526,32 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
       }
     }
 
+    // Bitácora y respaldos (HU-34): solo administración (RLS de 0001 y 0006); el servidor fija quién y cuándo
+    if (url.pathname === '/rest/v1/bitacora' || url.pathname === '/rest/v1/respaldos') {
+      const u = deToken(req);
+      if (!u) return json(route, 401, { code: 'PGRST301', message: 'JWT expired' });
+      const admin = u.miembros.find((m) => m.activo && m.rol === 'admin');
+      const orgsAdmin = u.miembros.filter((m) => m.activo && m.rol === 'admin').map((m) => ORGS[m.org].id);
+      const tabla = url.pathname.endsWith('bitacora') ? estado.bitacora : estado.respaldos;
+      if (req.method() === 'GET') {
+        const org = url.searchParams.get('organizacion_id')?.slice(3);
+        const campo = url.pathname.endsWith('bitacora') ? 'en' : 'hecho_en';
+        let filas = tabla.filter((x) => orgsAdmin.includes(x.organizacion_id) && (!org || x.organizacion_id === org));
+        for (const f of url.searchParams.getAll(campo)) {
+          if (f.startsWith('gte.')) filas = filas.filter((x) => new Date(x[campo]) >= new Date(f.slice(4)));
+          if (f.startsWith('lt.')) filas = filas.filter((x) => new Date(x[campo]) < new Date(f.slice(3)));
+        }
+        if (/hecho_en\.desc/.test(url.searchParams.get('order') || '')) filas = [...filas].sort((a, b) => b.hecho_en.localeCompare(a.hecho_en));
+        return json(route, 200, filas.map((x) => (x.hecho_por ? { ...x, autor: { nombre_completo: miembrosSim().find((m) => m.id === x.hecho_por)?.nombre_completo } } : x)));
+      }
+      if (req.method() === 'POST' && url.pathname.endsWith('respaldos')) {
+        const f = req.postDataJSON();
+        if (!admin || !orgsAdmin.includes(f.organizacion_id)) return json(route, 400, { code: 'P0001', message: 'Solo administración registra respaldos' });
+        estado.respaldos.push({ id: `rrrrrrrr-0000-0000-0000-${String(estado.respaldos.length + 1).padStart(12, '0')}`, ...f, hecho_por: admin.id, hecho_en: new Date().toISOString() });
+        return json(route, 201, undefined);
+      }
+    }
+
     // Revisiones (HU-23): imita RLS y el trigger preparar_revision (migración 0004)
     if (url.pathname === '/rest/v1/revisiones') {
       const u = deToken(req);
@@ -534,7 +562,9 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
         const mios = u.miembros.map((m) => m.id);
         const propias = (r) => mios.includes(eventos.find((e) => e.id === r.evento_id)?.miembro_id);
         const ids = /^in\.\((.*)\)$/.exec(url.searchParams.get('evento_id') || '')?.[1].split(',');
-        const filas = revisiones.filter((r) => (orgsCoord.includes(r.organizacion_id) || propias(r)) && (!org || r.organizacion_id === org) && (!ids || ids.includes(r.evento_id)))
+        const rango = url.searchParams.getAll('revisado_en');
+        const enRango = (r) => rango.every((f) => (f.startsWith('gte.') ? new Date(r.revisado_en) >= new Date(f.slice(4)) : f.startsWith('lt.') ? new Date(r.revisado_en) < new Date(f.slice(3)) : true));
+        const filas = revisiones.filter((r) => (orgsCoord.includes(r.organizacion_id) || propias(r)) && (!org || r.organizacion_id === org) && (!ids || ids.includes(r.evento_id)) && enRango(r))
           .map((r) => ({ ...r, revisor: { nombre_completo: miembrosSim().find((m) => m.id === r.revisado_por)?.nombre_completo } }));
         return json(route, 200, filas);
       }
