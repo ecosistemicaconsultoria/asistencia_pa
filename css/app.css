@@ -10,7 +10,8 @@
 
 /* ---------- Tokens ---------- */
 :root {
-  --verde: #14503A;     /* primario, botones */
+  --verde: #14503A;     /* primario, botones · cada organización puede cambiarlo (HU-11, js/marca.js) */
+  --verde-oscuro: #0E3D2C;   /* al presionar; se calcula del primario */
   --follaje: #3F6B57;   /* texto secundario */
   --grafito: #191D1B;   /* texto */
   --hueso: #F4F2EC;     /* fondo */
@@ -173,7 +174,7 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
   border: 1.5px solid #B9B3A3; border-radius: var(--radio-chico);
   background: var(--blanco); font-size: 16px;   /* 16 px evita el zoom automático en iOS */
 }
-.campo__entrada:focus { border-color: var(--verde); outline: none; box-shadow: 0 0 0 3px rgb(20 80 58 / 18%); }
+.campo__entrada:focus { border-color: var(--verde); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--verde) 18%, transparent); }
 
 .lista-opciones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .opcion {
@@ -189,8 +190,8 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .campo--grupo > legend { padding: 0; margin-bottom: 6px; }
 .opcion--radio { position: relative; min-height: 56px; cursor: pointer; padding-left: 48px; }
 .opcion--radio input { position: absolute; left: 16px; top: 50%; translate: 0 -50%; width: 20px; height: 20px; margin: 0; accent-color: var(--verde); }
-.opcion--radio:has(input:checked) { border-color: var(--verde); box-shadow: 0 0 0 2px rgb(20 80 58 / 25%); }
-.opcion--radio:has(input:focus-visible) { outline: 3px solid rgb(20 80 58 / 35%); outline-offset: 2px; }
+.opcion--radio:has(input:checked) { border-color: var(--verde); box-shadow: 0 0 0 2px color-mix(in srgb, var(--verde) 25%, transparent); }
+.opcion--radio:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--verde) 35%, transparent); outline-offset: 2px; }
 .opcion--radio .opcion__titulo { font-size: 16px; }
 .solicitud__comentario { font-size: 13px; color: var(--grafito); margin-top: 4px; }
 
@@ -239,8 +240,8 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 /* Efecto al tocar: el botón "se hunde" un poco (se desactiva con «reducir movimiento») */
 .boton, .boton-principal, .opcion, .nav__boton, .avatar { transition: transform .12s ease-out, background-color .15s ease-out, box-shadow .15s ease-out; }
 .boton:not(:disabled):active, .boton-principal:not(:disabled):active, .opcion:active, .nav__boton:active { transform: scale(.97); }
-.boton:not(:disabled):active { background-color: rgb(20 80 58 / 10%); }
-.boton--lleno:not(:disabled):active { background-color: #0E3D2C; }
+.boton:not(:disabled):active { background-color: color-mix(in srgb, var(--verde) 10%, transparent); }
+.boton--lleno:not(:disabled):active { background-color: var(--verde-oscuro); }
 
 .boton-principal {
   width: 100%;
@@ -250,13 +251,13 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
   border-radius: 20px;
   background: var(--verde);
   color: var(--blanco);
-  box-shadow: 0 6px 16px rgb(20 80 58 / 25%);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--verde) 25%, transparent);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
   text-align: center;
 }
 .boton-principal__texto { font-size: 21px; font-weight: 600; line-height: 1.2; }
 .boton-principal__detalle { font-size: 14px; opacity: .92; }
-.boton-principal:not(:disabled):active { background: #0E3D2C; }
+.boton-principal:not(:disabled):active { background: var(--verde-oscuro); }
 /* Apagado se ve apagado (antes parecía activo); el motivo se explica en texto junto al botón */
 .boton-principal:disabled { background: var(--neutro-fondo); color: var(--follaje); box-shadow: none; cursor: not-allowed; }
 .boton-principal--pie { min-height: 64px; border-radius: 16px; }
@@ -356,7 +357,7 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .tabla thead th { text-align: left; font-size: 13px; font-weight: 500; color: var(--follaje); padding: 8px 10px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 .tabla td, .tabla tbody th { padding: 10px; text-align: left; border-bottom: 1px solid var(--linea); vertical-align: middle; }
 .tabla tbody tr:last-child > * { border-bottom: 0; }
-.tabla tbody tr:hover { background: rgb(20 80 58 / 4%); }
+.tabla tbody tr:hover { background: color-mix(in srgb, var(--verde) 4%, transparent); }
 .tabla .tabla__num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tabla__persona { font-weight: 500; }
 .tabla__sub { display: block; font-size: 13px; color: var(--follaje); font-weight: 400; }
@@ -453,7 +454,7 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 /* Menú de secciones del panel: fijo arriba, útil sobre todo en el celular */
 .panel__menu { position: sticky; top: 0; z-index: 5; display: flex; gap: 4px; overflow-x: auto; padding: 8px 16px; background: var(--hueso); border-bottom: 1px solid var(--linea); }
 .panel__menu a { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--tactil); padding: 0 12px; border-radius: var(--radio-chico); color: var(--verde); font-weight: 600; font-size: 15px; text-decoration: none; }
-.panel__menu a:hover, .panel__menu a:focus-visible { background: rgb(20 80 58 / 8%); }
+.panel__menu a:hover, .panel__menu a:focus-visible { background: color-mix(in srgb, var(--verde) 8%, transparent); }
 .panel__cuenta:not(:empty) { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--critico-fondo); color: var(--critico-texto); font-size: 13px; font-family: var(--mono); text-align: center; }
 .panel__seccion { scroll-margin-top: 72px; }
 html:has(.app--panel) { scroll-behavior: smooth; }
@@ -476,7 +477,7 @@ html:has(.app--panel) { scroll-behavior: smooth; }
   border: 1.5px solid var(--linea); border-radius: var(--radio-chico); background: var(--blanco); font-weight: 600; cursor: pointer; }
 .dia-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .dia-chip:has(input:checked) { background: var(--verde); border-color: var(--verde); color: var(--blanco); }
-.dia-chip:has(input:focus-visible) { outline: 3px solid rgb(20 80 58 / 35%); outline-offset: 2px; }
+.dia-chip:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--verde) 35%, transparent); outline-offset: 2px; }
 .horario-editor__horas { flex-wrap: wrap; }
 .horario-editor__horas > .campo { flex: 1 1 100px; min-width: 0; }
 .alta__fila { flex-wrap: wrap; }
@@ -501,3 +502,17 @@ html:has(.app--panel) { scroll-behavior: smooth; }
 .respaldos__fechas { flex-wrap: wrap; }
 .respaldos__fechas > .campo { flex: 1 1 140px; min-width: 0; }
 .respaldo__huella { font-size: 13px; color: var(--follaje); white-space: nowrap; }
+
+/* Marca por organización (HU-11) */
+.marca__fila, .marca__botones { flex-wrap: wrap; align-items: flex-end; }
+.marca__fila > .campo { flex: 1 1 140px; min-width: 0; }
+.marca__selector { flex: 0 0 96px !important; }
+.marca__muestra { padding: 4px; height: var(--tactil); width: 100%; cursor: pointer; background: var(--blanco); }
+.marca__muestra::-webkit-color-swatch-wrapper { padding: 0; }
+.marca__muestra::-webkit-color-swatch { border: 0; border-radius: 6px; }
+.marca__muestra::-moz-color-swatch { border: 0; border-radius: 6px; }
+.marca__botones > .boton { flex: 1 1 180px; }
+.marca__vista { --muestra: var(--verde); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px; border-radius: var(--radio-chico); background: var(--hueso); }
+.marca__boton { display: inline-flex; align-items: center; min-height: var(--tactil); padding: 10px 18px; border-radius: var(--radio-chico); background: var(--muestra); color: var(--blanco); font-weight: 600; }
+.marca__enlace { color: var(--muestra); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.marca__error { color: var(--critico-texto); font-weight: 500; }

@@ -46,7 +46,7 @@
         <a href="#seccion-incidencias">Incidencias <span class="panel__cuenta" id="menu-incidencias"></span></a>
         <a href="#seccion-reportes">Reportes</a>
         <a href="#seccion-personas" id="menu-personas" hidden>Personas</a>
-        <a href="#seccion-respaldos" id="menu-respaldos" hidden>Respaldos</a>
+        <a href="#seccion-respaldos" id="menu-respaldos" hidden>Organización</a>
       </nav>
 
       <main class="contenido">
@@ -240,12 +240,31 @@
           <div class="panel__lista" id="personas-lista" aria-live="polite"></div>
         </section>
 
-        <!-- Respaldos (HU-34, solo administración) -->
-        <section class="vista panel__seccion" id="seccion-respaldos" aria-labelledby="respaldos-titulo" hidden>
+        <!-- Organización: marca (HU-11) y respaldos (HU-34), solo administración -->
+        <section class="vista panel__seccion" id="seccion-respaldos" aria-labelledby="organizacion-titulo" hidden>
           <div class="panel__cabecera">
-            <h2 class="panel__titulo" id="respaldos-titulo">Respaldos</h2>
+            <h2 class="panel__titulo" id="organizacion-titulo">Organización</h2>
           </div>
-          <article class="tarjeta formulario">
+          <article class="tarjeta formulario" aria-labelledby="marca-titulo">
+            <h3 class="grafica-tarjeta__titulo" id="marca-titulo">Marca</h3>
+            <p class="secundario chico">Color principal de botones, encabezados y enlaces para todas las personas de la organización. Debe leerse bien: el panel revisa el contraste antes de guardar.</p>
+            <div class="campo__fila marca__fila">
+              <label class="campo marca__selector"><span class="campo__etiqueta">Color</span><input class="campo__entrada marca__muestra" id="marca-color" type="color"></label>
+              <label class="campo"><span class="campo__etiqueta">Código</span><input class="campo__entrada mono" id="marca-hex" type="text" inputmode="text" maxlength="7" autocomplete="off" spellcheck="false"></label>
+            </div>
+            <div class="marca__vista" id="marca-vista" aria-label="Vista previa">
+              <span class="marca__boton">Iniciar bloque de campo</span>
+              <span class="marca__enlace">Ver en la bandeja de revisión</span>
+            </div>
+            <p class="secundario chico" id="marca-contraste" role="status"></p>
+            <div class="campo__fila marca__botones">
+              <button class="boton boton--lleno" type="button" id="marca-guardar">Guardar color</button>
+              <button class="boton" type="button" id="marca-restablecer">Usar el de Ecosistémica</button>
+            </div>
+            <p class="aviso" id="marca-aviso" role="status" hidden></p>
+          </article>
+          <article class="tarjeta formulario" aria-labelledby="respaldos-titulo">
+            <h3 class="grafica-tarjeta__titulo" id="respaldos-titulo">Respaldos</h3>
             <p class="secundario chico">Descarga un ZIP con checadas, revisiones, incidencias, bitácora y personas del periodo, con la huella de cada archivo. Guárdalo fuera de Supabase (por ejemplo, en la unidad compartida de la organización). Recomendado: cada mes.</p>
             <div class="campo__fila respaldos__fechas">
               <label class="campo"><span class="campo__etiqueta">Desde</span><input class="campo__entrada mono" id="respaldo-desde" type="date"></label>

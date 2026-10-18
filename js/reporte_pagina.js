@@ -2,6 +2,7 @@
 // Con &mio=1 es "Mi registro" (HU-16): cualquier persona consulta y descarga el suyo.
 // Se imprime o se guarda como PDF desde el navegador (sin dependencias nuevas).
 import * as sesion from './sesion.js';
+import { aplicarMarca } from './marca.js';
 import * as api from './api.js';
 import { horasMinutos } from './reporte.js';
 import { cargarReporte, cargarMiRegistro } from './reporte_datos.js';
@@ -32,6 +33,7 @@ async function iniciar() {
   if (r.estado !== 'lista') return error('Inicia sesión en la app con tu cuenta de coordinación y vuelve a abrir el reporte.');
   if (!mio && !['coordinador', 'admin'].includes(r.perfil.rol)) return error('El reporte de la organización es solo para coordinación.');
   const p = r.perfil;
+  aplicarMarca(p.organizacion.config);
   const zona = p.organizacion.zonaHoraria;
   try {
     const personas = mio ? [(await cargarMiRegistro(p, desde, hasta)).persona] : await cargarReporte(p, desde, hasta, miembro);

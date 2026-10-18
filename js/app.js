@@ -9,6 +9,7 @@ import { guardarMeta } from './almacen.js';
 import * as reloj from './reloj.js';
 import * as horas from './horas.js';
 import * as correccion from './correccion.js';
+import { aplicarMarca } from './marca.js';
 import * as incidencias from './incidencias.js';
 import { cargarMiRegistro } from './reporte_datos.js';
 import { csvNomina } from './reporte.js';
@@ -62,6 +63,7 @@ function pintarPerfil(correo) {
   const p = estado.perfil;
   const primerNombre = p.nombre.split(/\s+/)[0];
   TITULOS.inicio = `Hola, ${primerNombre}`;
+  aplicarMarca(p.organizacion.config);   // color de la organización (HU-11)
   $('org-nombre').textContent = p.organizacion.nombre;
   $('avatar').textContent = iniciales(p.nombre);
   $('perfil-nombre').textContent = p.nombre;
@@ -201,6 +203,7 @@ function conectarFormularios() {
     await recordatorio.quitarPush().catch(() => {});   // este teléfono deja de recibir avisos de esta cuenta
     await sesion.salir();
     estado.perfil = null;
+    aplicarMarca(null);   // la pantalla de acceso vuelve al color de omisión
     $('catalogo-buscar').value = '';
     $('catalogo-resultados').replaceChildren();
     location.hash = '';

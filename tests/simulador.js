@@ -229,6 +229,20 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
       return json(route, 200, { ok: suyas.length, fallidos: 0 });
     }
     // RPC de suscripciones (migración 0005): solo a nombre propio; el teléfono pasa a quien lo registra
+    // Marca por organización (migración 0007): solo administración; solo cambia config.color_primario (de PA)
+    if (url.pathname === '/rest/v1/rpc/cambiar_marca') {
+      const u = deToken(req);
+      if (!u) return json(route, 401, { code: 'PGRST301', message: 'JWT expired' });
+      const d = req.postDataJSON();
+      const admin = u.miembros.find((m) => m.activo && m.rol === 'admin' && ORGS[m.org].id === d.p_organizacion);
+      if (!admin || admin.org !== 'pa') return json(route, 400, { code: 'P0001', message: 'Solo administración cambia la marca de la organización' });
+      const color = String(d.p_color || '').trim().toUpperCase();
+      if (color && !/^#[0-9A-F]{6}$/.test(color)) return json(route, 400, { code: 'P0001', message: 'Color inválido: usa el formato #RRGGBB' });
+      estado.bitacora.push({ id: estado.bitacora.length + 1, en: new Date().toISOString(), organizacion_id: d.p_organizacion, tabla: 'organizaciones', registro_id: d.p_organizacion, accion: 'MARCA', datos: { color_anterior: configPA.color_primario ?? null, color_nuevo: color || null } });
+      if (color) configPA.color_primario = color; else delete configPA.color_primario;
+      return json(route, 200, { color_primario: color || null });
+    }
+
     if (url.pathname === '/rest/v1/rpc/registrar_suscripcion' || url.pathname === '/rest/v1/rpc/quitar_suscripcion') {
       const u = deToken(req);
       if (!u) return json(route, 401, { code: 'PGRST301', message: 'JWT expired' });

@@ -10,6 +10,7 @@ import { metricasSemana, semaforo } from './metricas.js';
 import { barrasAsistencia, barrasHoras, lineaZona, horasTexto } from './graficas.js';
 import { dibujarMapa, describirChecada, claseChecada } from './mapa.js';
 import { armarRespaldo } from './respaldo.js';
+import { aplicarMarca, validarColor, colorDe, COLOR_DEFECTO } from './marca.js';
 import { armarBandeja, MOTIVOS } from './bandeja.js';
 import { csvNomina } from './reporte.js';
 import { semanasNomina, csvSemanal, lunesDe } from './nomina.js';
@@ -55,6 +56,7 @@ async function iniciar() {
   if (r.estado === 'elegir') return sinAcceso('Elige tu organización en la app y vuelve a abrir el panel.');
   if (!['coordinador', 'admin'].includes(r.perfil.rol)) return sinAcceso('Esta página es solo para coordinación.');
   estado.perfil = r.perfil;
+  aplicarMarca(r.perfil.organizacion.config);   // color de la organización (HU-11)
   $('panel-org').textContent = r.perfil.organizacion.nombre;
   $('panel-persona').textContent = r.perfil.nombre;
   $('panel-cargando').hidden = true;
@@ -74,6 +76,7 @@ async function iniciar() {
   if (r.perfil.rol === 'admin') {
     await personas.preparar(r.perfil, aviso);
     await prepararRespaldos();
+    prepararMarca();
     pintarAtencion();
   }
 }
@@ -248,6 +251,46 @@ async function pintarMapa() {
   } catch (e) {
     $('mapa-estado').textContent = api.esErrorDeRed(e) ? 'Sin señal: el mapa necesita conexión.' : e.message;
   }
+}
+
+// ---------- Marca por organización (HU-11, solo administración) ----------
+function prepararMarca() {
+  const p = estado.perfil;
+  const selector = $('marca-color'), codigo = $('marca-hex'), guardar = $('marca-guardar');
+  const avisoMarca = (texto, tipo = 'ok') => { const a = $('marca-aviso'); a.textContent = texto || ''; a.className = `aviso aviso--${tipo}`; a.hidden = !texto; };
+  const mostrar = (valor) => {
+    const v = validarColor(valor);
+    if (v.color) { selector.value = v.color.toLowerCase(); selector.style.backgroundColor = v.color; $('marca-vista').style.setProperty('--muestra', v.color); }
+    $('marca-contraste').textContent = v.color
+      ? `${v.mensaje} Contraste con texto blanco ${v.conBlanco}:1 · sobre el fondo ${v.conFondo}:1 (mínimo 4.5:1).`
+      : v.mensaje;
+    $('marca-contraste').className = `chico ${v.ok ? 'secundario' : 'marca__error'}`;
+    guardar.disabled = !v.ok;
+    return v;
+  };
+  const inicial = colorDe(p.organizacion.config);
+  codigo.value = inicial;
+  mostrar(inicial);
+  selector.addEventListener('input', () => { codigo.value = selector.value.toUpperCase(); avisoMarca(''); mostrar(codigo.value); });
+  codigo.addEventListener('input', () => { avisoMarca(''); mostrar(codigo.value); });
+  const guardarColor = async (color) => {
+    guardar.disabled = true;
+    try {
+      const r = await api.cambiarMarca(p.organizacionId, color);
+      const config = { ...(p.organizacion.config || {}) };
+      if (r?.color_primario) config.color_primario = r.color_primario; else delete config.color_primario;
+      p.organizacion.config = config;
+      aplicarMarca(config);
+      codigo.value = colorDe(config);
+      mostrar(codigo.value);
+      avisoMarca('Listo: todas las personas verán este color la próxima vez que abran la app.');
+    } catch (e) {
+      mostrar(codigo.value);
+      avisoMarca(api.esErrorDeRed(e) ? 'Sin señal: no se pudo guardar el color.' : `No se pudo guardar el color: ${e.message}`, 'critico');
+    }
+  };
+  guardar.addEventListener('click', () => { const v = mostrar(codigo.value); if (v.ok) guardarColor(v.color); });
+  $('marca-restablecer').addEventListener('click', () => { codigo.value = COLOR_DEFECTO; mostrar(COLOR_DEFECTO); guardarColor(''); });
 }
 
 // ---------- Respaldos (HU-34, solo administración) ----------

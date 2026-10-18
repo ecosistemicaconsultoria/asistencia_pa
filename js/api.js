@@ -600,3 +600,10 @@ export async function respaldosDeOrganizacion(organizacionId) {
   if (error) throw error;
   return data || [];
 }
+
+// ---------- Marca por organización (HU-11): solo administración; solo cambia el color (migración 0007) ----------
+export async function cambiarMarca(organizacionId, color) {
+  const { data, error } = await conLimite(cliente.rpc('cambiar_marca', { p_organizacion: organizacionId, p_color: color || '' }), 15000);
+  if (error) throw error;
+  return data;
+}
