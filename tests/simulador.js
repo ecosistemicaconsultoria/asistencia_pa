@@ -407,6 +407,9 @@ export async function simularSupabase(page, { sitiosPA = 782, sitiosDemo = 3, ev
       if (hasta) filas = filas.filter((e) => new Date(e.hora_efectiva) < new Date(hasta));
       const revision = url.searchParams.get('estado_revision');
       if (revision) filas = filas.filter((e) => `eq.${e.estado_revision}` === revision);
+      // Mapa (HU-25): sin teletrabajo y solo con ubicación
+      if (url.searchParams.get('modalidad') === 'neq.teletrabajo') filas = filas.filter((e) => e.modalidad !== 'teletrabajo');
+      if (url.searchParams.get('lat') === 'not.is.null') filas = filas.filter((e) => e.lat != null);
       const desc = /hora_efectiva\.desc/.test(url.searchParams.get('order') || '');
       filas.sort((a, b) => (desc ? -1 : 1) * (new Date(a.hora_efectiva) - new Date(b.hora_efectiva)));
       if (/persona:/.test(url.searchParams.get('select') || '')) {

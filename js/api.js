@@ -307,6 +307,23 @@ export async function eventosDeOrganizacion(organizacionId, desdeISO, hastaISO) 
 }
 
 // Ids de checadas cuya hora corrigió una incidencia aprobada (ya no cuentan; migración 0003).
+// Mapa del panel (HU-25): checadas con ubicación de un día. Las de teletrabajo NO se piden: su ubicación es el
+// domicilio de la persona y no se muestra en el mapa.
+export async function checadasParaMapa(organizacionId, desdeISO, hastaISO) {
+  const { data, error } = await conLimite(cliente
+    .from('eventos_jornada')
+    .select('id, miembro_id, tipo, bloque, hora_efectiva, lat, lon, precision_m, sitio_id, distancia_sitio_m, dentro_geocerca, estado_revision, persona:miembros!miembro_id(nombre_completo)')
+    .eq('organizacion_id', organizacionId)
+    .neq('modalidad', 'teletrabajo')
+    .not('lat', 'is', null)
+    .gte('hora_efectiva', desdeISO)
+    .lt('hora_efectiva', hastaISO)
+    .order('hora_efectiva')
+    .limit(2000), 20000);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function corregidasDeOrganizacion(organizacionId) {
   const { data, error } = await conLimite(cliente
     .from('incidencias')

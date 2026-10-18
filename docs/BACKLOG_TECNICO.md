@@ -84,7 +84,7 @@ las personas (incluida quien administra); el punto de ubicación NO se arrastra 
 | Estado | ID | Historia | Criterios de aceptación |
 |---|---|---|---|
 | ☑ v32 | HU-39 | Métricas de la semana en el panel | Indicadores con estado frente a la meta (puntualidad, horas de la vista oficial, dentro de zona, pendientes); asistencia por día, horas por persona contra la jornada semanal y dentro de zona en 8 semanas; lista "Requiere atención"; cada gráfica con leyenda, descripción por marca y tabla. Metas configurables: `meta_puntualidad_pct` (90), `meta_dentro_zona_pct` (90) |
-| ☐ | HU-25 | Mapa con polígonos (Leaflet) | En el panel, los parques con su perímetro sobre un mapa real y las checadas dentro/fuera; sin conexión el asesor conserva el mapa esquemático |
+| ☑ v33 | HU-25 | Mapa con polígonos (Leaflet) | En el panel, los parques con su perímetro (o radio) sobre OpenStreetMap y las checadas del día dentro/fuera de zona con su precisión estimada, ventana de detalle y tabla. El punto no se mueve (es la evidencia). Sin teletrabajo ni domicilios (privacidad). Sin conexión el asesor conserva el mapa esquemático |
 | ☐ | — | Pendiente de Parques Alegres | Cómo opera "Dirección como revisora final": por ahora, Dirección con cuenta de Coordinación revisa a todos (nadie revisa lo propio). Si se quiere doble revisión (Administración y luego Dirección), es una historia nueva |
 
 ## Sprint 6 en adelante (referencia)

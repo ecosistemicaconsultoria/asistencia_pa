@@ -9,8 +9,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/ibm-plex-sans-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/app.css">
   <script src="vendor/supabase.js" defer></script>
+  <script src="vendor/leaflet/leaflet.js" defer></script>
   <script type="module" src="js/panel.js"></script>
 </head>
 <body>
@@ -39,6 +41,7 @@
       <nav class="panel__menu" aria-label="Secciones del panel">
         <a href="#seccion-hoy">Hoy</a>
         <a href="#seccion-metricas">Métricas</a>
+        <a href="#seccion-mapa">Mapa</a>
         <a href="#seccion-revision">Revisión <span class="panel__cuenta" id="menu-revisar"></span></a>
         <a href="#seccion-incidencias">Incidencias <span class="panel__cuenta" id="menu-incidencias"></span></a>
         <a href="#seccion-reportes">Reportes</a>
@@ -113,6 +116,34 @@
               <ul class="lista atencion" id="lista-atencion"></ul>
             </article>
           </div>
+        </section>
+
+        <!-- Mapa con polígonos (HU-25) -->
+        <section class="vista panel__seccion" id="seccion-mapa" aria-labelledby="mapa-titulo">
+          <div class="panel__cabecera">
+            <h2 class="panel__titulo" id="mapa-titulo">Mapa de checadas</h2>
+            <div class="panel__filtros">
+              <label class="campo campo--en-linea"><span class="campo__etiqueta">Día</span>
+                <input class="campo__entrada mono" id="mapa-fecha" type="date"></label>
+            </div>
+          </div>
+          <article class="tarjeta mapa-tarjeta">
+            <ul class="leyenda" aria-hidden="true">
+              <li><i class="leyenda__marca leyenda__marca--punto g-ok"></i>Dentro de la zona</li>
+              <li><i class="leyenda__marca leyenda__marca--punto g-critico"></i>Fuera de la zona</li>
+              <li><i class="leyenda__marca leyenda__marca--punto leyenda__marca--sin-zona"></i>Zona no aplica (pausa)</li>
+              <li><i class="leyenda__marca leyenda__marca--sitio"></i>Perímetro del parque</li>
+            </ul>
+            <div class="mapa-real" id="mapa-real" role="region" aria-label="Mapa con los parques y las checadas del día"></div>
+            <p class="secundario chico" id="mapa-estado" role="status">Cargando el mapa…</p>
+            <details class="ayuda"><summary>Ver checadas como tabla</summary>
+              <div class="tabla__marco"><table class="tabla tabla--datos" id="tabla-mapa"><thead><tr><th scope="col">Persona</th><th scope="col">Checada</th><th scope="col">Zona</th><th scope="col">Sitio</th><th scope="col" class="tabla__num">Distancia</th></tr></thead><tbody></tbody></table></div>
+            </details>
+            <details class="ayuda"><summary>Más información</summary>
+              <p>Cada punto es la ubicación que registró el GPS al checar; el círculo tenue es su precisión estimada. El punto no se puede mover: es la evidencia del registro. Si alguien estaba en el parque y el GPS falló, lo aclara con su justificación o una solicitud de corrección, y se valida en la bandeja de revisión.</p>
+              <p>No aparecen las checadas de teletrabajo ni los domicilios: su ubicación es privada.</p>
+            </details>
+          </article>
         </section>
 
         <!-- Bandeja de revisión (HU-23) -->

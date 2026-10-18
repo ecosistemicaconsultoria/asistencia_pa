@@ -406,6 +406,30 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .atencion__enlace:hover .lista__titulo { text-decoration: underline; }
 .atencion .chip { white-space: nowrap; }
 
+/* Mapa con polígonos (HU-25) · Leaflet. isolation: sus capas no tapan el menú fijo del panel */
+.mapa-tarjeta { display: flex; flex-direction: column; gap: 10px; }
+.mapa-real { height: 440px; border-radius: var(--radio-chico); overflow: hidden; background: #E9EEE6; position: relative; z-index: 0; isolation: isolate; font-family: var(--sans); }
+@media (max-width: 599px) { .mapa-real { height: 360px; } }
+.mapa-real .mapa-sitio { fill: var(--salvia); fill-opacity: .35; stroke: var(--verde); stroke-width: 2; stroke-dasharray: 6 4; }
+.mapa-real .mapa-checada { stroke: var(--blanco); stroke-width: 3; fill-opacity: 1; }
+.mapa-real .mapa-checada--dentro { fill: var(--serie-ok); }
+.mapa-real .mapa-checada--fuera { fill: var(--serie-critico); }
+.mapa-real .mapa-checada--sin-zona { fill: var(--agua); }
+.mapa-real .mapa-precision { stroke-dasharray: 3 3; fill-opacity: .12; }
+.mapa-real .mapa-precision--dentro { fill: var(--serie-ok); stroke: var(--serie-ok); }
+.mapa-real .mapa-precision--fuera { fill: var(--serie-critico); stroke: var(--serie-critico); }
+.mapa-real .mapa-precision--sin-zona { fill: var(--agua); stroke: var(--agua); }
+.mapa-real .leaflet-popup-content { margin: 12px 14px; font-size: 14px; line-height: 1.45; }
+.mapa-ventana p { margin: 0; }
+.mapa-ventana__titulo { font-weight: 600; margin-bottom: 4px !important; }
+.mapa-ventana a { display: inline-block; margin-top: 6px; color: var(--verde); font-weight: 600; }
+.mapa-real .leaflet-control-zoom a { width: 36px; height: 36px; line-height: 36px; }
+.leyenda__marca--punto { border-radius: 50%; }
+.leyenda__marca--sin-zona { background: var(--agua); }
+.leyenda__marca--sitio { background: rgb(126 154 118 / 35%); border: 2px dashed var(--verde); border-radius: 2px; }
+.campo--en-linea { flex-direction: row; align-items: center; gap: 8px; }
+.campo--en-linea .campo__entrada { min-width: 0; }
+
 /* Bandeja de revisión (HU-23) */
 .revision__motivos { display: flex; flex-wrap: wrap; gap: 6px; }
 .revision__selfie { width: 100%; max-width: 240px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radio-chico); background: #2B302D; }

@@ -8,6 +8,7 @@ import { TIPOS, ESTADOS, nombreChecada } from './incidencias.js';
 import { tableroDelDia } from './tablero.js';
 import { metricasSemana, semaforo } from './metricas.js';
 import { barrasAsistencia, barrasHoras, lineaZona, horasTexto } from './graficas.js';
+import { dibujarMapa, describirChecada, claseChecada } from './mapa.js';
 import { armarBandeja, MOTIVOS } from './bandeja.js';
 import { csvNomina } from './reporte.js';
 import { semanasNomina, csvSemanal, lunesDe } from './nomina.js';
@@ -68,6 +69,7 @@ async function iniciar() {
   await sitios.actualizar(r.perfil).catch(() => null);   // nombres de parques (una descarga al día, compartida con la app)
   await Promise.all([pintarHoy(), pintarBandeja(), pintar()]);
   await pintarMetricas();
+  prepararMapa();
   if (r.perfil.rol === 'admin') await personas.preparar(r.perfil, aviso);
 }
 
@@ -200,6 +202,46 @@ function pintarAtencion() {
     li.append(a, c);
     return li;
   }));
+}
+
+// ---------- Mapa con polígonos (HU-25) ----------
+function prepararMapa() {
+  const fecha = $('mapa-fecha');
+  fecha.value = partesLocales(new Date(), zona()).fecha;
+  fecha.max = fecha.value;
+  fecha.addEventListener('change', () => { if (fecha.value) pintarMapa(); });
+  // El mapa se dibuja cuando la sección se acerca a la pantalla (no descarga mosaicos si nadie lo mira)
+  const obs = new IntersectionObserver((entradas) => {
+    if (entradas.some((x) => x.isIntersecting)) { obs.disconnect(); pintarMapa(); }
+  }, { rootMargin: '200px' });
+  obs.observe($('mapa-real'));
+}
+async function pintarMapa() {
+  const p = estado.perfil;
+  const dia = $('mapa-fecha').value;
+  const { desde, hasta } = rangoDelDia(new Date(`${dia}T12:00:00Z`), zona());
+  $('mapa-estado').textContent = 'Cargando el mapa…';
+  try {
+    const [catalogo, checadas] = await Promise.all([sitios.todos(p.organizacionId), api.checadasParaMapa(p.organizacionId, desde.toISOString(), hasta.toISOString())]);
+    const r = dibujarMapa($('mapa-real'), { catalogo, checadas, horaCorta });
+    $('mapa-estado').textContent = `${r.checadas} ${r.checadas === 1 ? 'checada' : 'checadas'} con ubicación · ${r.fuera} fuera de zona · ${r.sitios} sitios en el catálogo`;
+    const nombres = new Map(catalogo.map((x) => [x.id, x.nombre]));
+    $('tabla-mapa').querySelector('tbody').replaceChildren(...checadas.map((c) => {
+      const d = describirChecada(c, nombres.get(c.sitio_id), horaCorta);
+      const tr = document.createElement('tr');
+      tr.dataset.zona = claseChecada(c);
+      for (const [i, v] of [d.persona, d.detalle, d.zona, d.sitio, d.distancia].entries()) {
+        const td = document.createElement(i ? 'td' : 'th');
+        if (!i) td.scope = 'row';
+        if (i === 4) td.className = 'tabla__num';
+        td.textContent = v;
+        tr.append(td);
+      }
+      return tr;
+    }));
+  } catch (e) {
+    $('mapa-estado').textContent = api.esErrorDeRed(e) ? 'Sin señal: el mapa necesita conexión.' : e.message;
+  }
 }
 
 // ---------- Tablero del día (HU-27) ----------

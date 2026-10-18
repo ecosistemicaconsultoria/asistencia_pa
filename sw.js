@@ -35,8 +35,9 @@
 // asis-2026-10-18-v30 · UX-01 revisión de usabilidad: checada con confirmar fijo abajo y el motivo cuando aún no se puede, ubicación plegable, acciones delicadas discretas, contraste de días futuros, «reducir movimiento», íconos SVG y ayudas del panel plegadas.
 // asis-2026-10-18-v31 · UX-02 nombre y logotipo propios: «Presente» (pin con palomita) en íconos, acceso, instalación, panel y guía con QR.
 // asis-2026-10-18-v32 · HU-39 métricas de la semana en el panel: indicadores con estado, gráficas SVG (asistencia por día, horas por persona, dentro de zona en 8 semanas) con tabla, y lista "Requiere atención".
+// asis-2026-10-18-v33 · HU-25 mapa del panel (Leaflet + OpenStreetMap): perímetros de los parques y checadas del día dentro/fuera de zona, sin teletrabajo ni domicilios.
 
-const CACHE_VERSION = 'asis-2026-10-18-v32';
+const CACHE_VERSION = 'asis-2026-10-18-v33';
 
 const CASCARON = [
   './',
