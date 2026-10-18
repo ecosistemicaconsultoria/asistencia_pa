@@ -1,4 +1,5 @@
 // Servidor estático mínimo para pruebas locales (simula GitHub Pages). No se usa en producción.
+// Bajo /cf/ imita a Cloudflare Pages: /x.html redirige (308) a /x y /x sirve x.html ("direcciones limpias").
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -14,7 +15,17 @@ const TIPOS = {
 
 createServer(async (req, res) => {
   try {
-    let ruta = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const url = new URL(req.url, 'http://x');
+    let ruta = decodeURIComponent(url.pathname);
+    if (ruta.startsWith('/cf/')) {
+      if (ruta.endsWith('.html')) {
+        const limpia = ruta.endsWith('/index.html') ? ruta.slice(0, -'index.html'.length) : ruta.slice(0, -'.html'.length);
+        res.writeHead(308, { Location: limpia + url.search });
+        return res.end();
+      }
+      ruta = ruta.slice(3);
+      if (!ruta.endsWith('/') && !extname(ruta)) ruta += '.html';
+    }
     if (ruta.endsWith('/')) ruta += 'index.html';
     const archivo = normalize(join(RAIZ, ruta));
     if (!archivo.startsWith(RAIZ) || archivo.includes('node_modules')) throw new Error('fuera');

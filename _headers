@@ -1,0 +1,9 @@
+# Encabezados que Cloudflare Pages agrega a cada respuesta (GitHub Pages ignora este archivo).
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(self), camera=(self), microphone=(), payment=()
+# El service worker siempre se revisa en el servidor: así las versiones nuevas llegan sin demora
+/sw.js
+  Cache-Control: no-cache
