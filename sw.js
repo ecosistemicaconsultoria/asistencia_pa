@@ -39,8 +39,9 @@
 // asis-2026-10-18-v34 · UX-02 corrección: íconos con nombre de archivo nuevo (presente-*.png) para que no se reutilice el logotipo anterior guardado; avisos con el nombre «Presente».
 // asis-2026-10-18-v35 · HU-34 respaldos: ZIP mensual con CSV por tabla y huellas SHA-256, constancia inalterable (migración 0006) y aviso si no hay respaldo reciente.
 // asis-2026-10-18-v36 · HU-11 marca por organización: color principal configurable desde el panel con contraste AA obligatorio (migración 0007).
+// asis-2026-10-18-v37 · HU-38 manual de réplica para otras IAP (docs/REPLICA.md) e instalación completa en un solo archivo SQL.
 
-const CACHE_VERSION = 'asis-2026-10-18-v36';
+const CACHE_VERSION = 'asis-2026-10-18-v37';
 
 const CASCARON = [
   './',

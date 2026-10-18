@@ -28,4 +28,7 @@ echo "$R0006" | grep -q "PRUEBAS 0006: OK" && echo "PRUEBAS 0006: OK" || { echo 
 R0007=$($P -d t -v ON_ERROR_STOP=1 -f "$(dirname "$0")/pruebas_0007.sql" 2>&1 || true)
 echo "$R0007" | grep -q "PRUEBAS 0007: OK" && echo "PRUEBAS 0007: OK" || { echo "$R0007" | grep -E "ERROR|assert" ; echo "PRUEBAS 0007: FALLA"; su postgres -c "$PGBIN/pg_ctl -D $DIR stop >/dev/null"; exit 1; }
 su postgres -c "$PGBIN/pg_ctl -D $DIR stop >/dev/null"
-[ "$ERR" = "5" ] && echo "PRUEBAS SQL: OK" || { echo "PRUEBAS SQL: REVISAR"; exit 1; }
+[ "$ERR" = "5" ] || { echo "PRUEBAS SQL: REVISAR"; exit 1; }
+# Manual de réplica (HU-38): instalación completa en una base limpia + bloques SQL de docs/REPLICA.md
+bash "$(dirname "$0")/pruebas_replica.sh" | tail -1
+echo "PRUEBAS SQL: OK"

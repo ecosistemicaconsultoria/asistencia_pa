@@ -7,6 +7,8 @@ PWA en JavaScript puro con Supabase (Postgres + PostGIS, Auth, Storage y RLS).
 - Especificación funcional: [`docs/ESPECIFICACION.md`](docs/ESPECIFICACION.md)
 - Backlog técnico: [`docs/BACKLOG_TECNICO.md`](docs/BACKLOG_TECNICO.md)
 - Alta de personas (administración): [`docs/ALTA_PERSONAS.md`](docs/ALTA_PERSONAS.md)
+- Avisos con la app cerrada: [`docs/AVISOS.md`](docs/AVISOS.md) · Respaldos: [`docs/RESPALDOS.md`](docs/RESPALDOS.md)
+- Réplica en otra IAP: [`docs/REPLICA.md`](docs/REPLICA.md)
 - Esquema de base de datos: [`supabase/migrations/`](supabase/migrations/) · pruebas: [`supabase/tests/`](supabase/tests/)
 
 Desarrollado por Ecosistémica – Consultoría Ambiental Integral.
