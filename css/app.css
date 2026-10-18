@@ -191,7 +191,8 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .dia__derecha { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .dia__horas { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 15px; min-width: 3.2em; text-align: right; }
 .dia--hoy .lista__titulo { color: var(--verde); }
-.dia--futuro { opacity: .55; }
+/* Días por venir: en tono secundario (antes con transparencia, no alcanzaba el contraste mínimo) */
+.dia--futuro .lista__titulo, .dia--futuro .dia__horas { color: var(--follaje); font-weight: 400; }
 
 /* ---------- Catálogo de parques ---------- */
 .catalogo { display: flex; flex-direction: column; gap: 12px; }
@@ -224,6 +225,15 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .boton--ancho { width: 100%; }
 .boton--chico { min-width: var(--tactil); padding: 6px 12px; font-size: 14px; }
 .boton:disabled { opacity: .5; cursor: not-allowed; }
+/* Acciones delicadas (dar de baja, cerrar sesión, rechazar): contorno, nunca el botón más llamativo */
+.boton--delicado { border-color: var(--tierra); color: var(--tierra); background: transparent; }
+/* Acción de salida sin peso visual (Cancelar) */
+.boton--texto { border-color: transparent; background: transparent; color: var(--verde); text-decoration: underline; text-underline-offset: 3px; }
+/* Efecto al tocar: el botón "se hunde" un poco (se desactiva con «reducir movimiento») */
+.boton, .boton-principal, .opcion, .nav__boton, .avatar { transition: transform .12s ease-out, background-color .15s ease-out, box-shadow .15s ease-out; }
+.boton:not(:disabled):active, .boton-principal:not(:disabled):active, .opcion:active, .nav__boton:active { transform: scale(.97); }
+.boton:not(:disabled):active { background-color: rgb(20 80 58 / 10%); }
+.boton--lleno:not(:disabled):active { background-color: #0E3D2C; }
 
 .boton-principal {
   width: 100%;
@@ -239,7 +249,38 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 }
 .boton-principal__texto { font-size: 21px; font-weight: 600; line-height: 1.2; }
 .boton-principal__detalle { font-size: 14px; opacity: .92; }
-.boton-principal:disabled { background: var(--follaje); box-shadow: none; cursor: not-allowed; }
+.boton-principal:not(:disabled):active { background: #0E3D2C; }
+/* Apagado se ve apagado (antes parecía activo); el motivo se explica en texto junto al botón */
+.boton-principal:disabled { background: var(--neutro-fondo); color: var(--follaje); box-shadow: none; cursor: not-allowed; }
+.boton-principal--pie { min-height: 64px; border-radius: 16px; }
+.boton-principal[aria-busy="true"] { cursor: progress; }
+
+/* ---------- Pantalla de checada ---------- */
+/* Estado de la ubicación: arriba, con un indicador que gira mientras busca */
+.estado-gps { display: flex; align-items: center; gap: 10px; min-height: 24px; font-size: 14px; font-weight: 500; color: var(--follaje); }
+.estado-gps:empty { display: none; }
+.estado-gps::before { content: ''; flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--ok); }
+.estado-gps[data-buscando="true"]::before { background: none; border: 2.5px solid var(--linea); border-top-color: var(--verde); animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+/* Ubicación y detalles plegables */
+.detalles { padding: 0; overflow: hidden; }
+.detalles__resumen { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 12px 16px; cursor: pointer; list-style: none; }
+.detalles__resumen::-webkit-details-marker { display: none; }
+.detalles__resumen::after { content: ''; flex: none; width: 9px; height: 9px; border-right: 2px solid var(--follaje); border-bottom: 2px solid var(--follaje); transform: rotate(45deg) translate(-2px, -2px); transition: transform .15s; }
+.detalles[open] > .detalles__resumen::after { transform: rotate(-135deg) translate(-2px, -2px); }
+.detalles__titulo { font-weight: 500; white-space: nowrap; }
+.detalles__dato { margin-left: auto; font-size: 13px; color: var(--follaje); text-align: right; overflow-wrap: anywhere; }
+.detalles > .lista { padding: 0 16px 4px; }
+/* Barra fija: confirmar al alcance del pulgar */
+.checada__pie {
+  position: sticky; bottom: 0; z-index: 5;
+  margin: auto -16px -24px; padding: 10px 16px calc(8px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--hueso); border-top: 1px solid var(--linea);
+  box-shadow: 0 -6px 16px rgb(25 29 27 / 6%);
+}
+.checada__motivo { font-size: 14px; font-weight: 500; color: var(--aviso-texto); text-align: center; }
+.checada__motivo:empty { display: none; }
 
 /* ---------- Avisos ---------- */
 .aviso {
@@ -353,6 +394,11 @@ textarea.campo__entrada { resize: vertical; min-height: 88px; }
 .panel__cuenta:not(:empty) { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--critico-fondo); color: var(--critico-texto); font-size: 13px; font-family: var(--mono); text-align: center; }
 .panel__seccion { scroll-margin-top: 72px; }
 html:has(.app--panel) { scroll-behavior: smooth; }
+/* Ayudas del panel: una línea y el resto en «Más información» */
+.ayuda { font-size: 13px; color: var(--follaje); }
+.ayuda > summary { display: inline-flex; align-items: center; min-height: var(--tactil); cursor: pointer; color: var(--verde); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.ayuda > p { margin-top: 2px; }
+.ayuda > p + p { margin-top: 6px; }
 @media (max-width: 479px) {
   .panel__menu { gap: 0; padding: 6px 8px; }
   .panel__menu a { flex: 1 1 auto; padding: 0 6px; gap: 4px; font-size: 14px; }
@@ -376,3 +422,14 @@ html:has(.app--panel) { scroll-behavior: smooth; }
 .personas__botones { flex-wrap: wrap; }
 .personas__botones > * { flex: 1 1 140px; }
 .personas__edicion { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.personas__delicado { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--linea); }
+
+/* Perfil: cerrar sesión separado del resto */
+.perfil__salir { margin-top: 16px; }
+
+/* ---------- Reducir movimiento (ajuste del teléfono) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+  .boton:active, .boton-principal:active, .opcion:active, .nav__boton:active { transform: none !important; }
+  .estado-gps[data-buscando="true"]::before { border-color: var(--verde); }
+}

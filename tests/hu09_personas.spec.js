@@ -179,6 +179,7 @@ test('editar rol y horario: el horario anterior se cierra ayer y el nuevo rige d
 test('baja: ya no puede entrar (registros intactos); reactivar y restablecer contraseña', async ({ page }) => {
   const sim = await abrirPanel(page);
   page.once('dialog', (d) => d.accept());
+  await tarjeta(page, 'Asesor de Prueba').locator('[data-persona="editar"]').click();   // la baja vive dentro de Editar
   await tarjeta(page, 'Asesor de Prueba').locator('[data-persona="baja"]').click();
   await expect(page.locator('#panel-aviso')).toHaveText('Asesor de Prueba quedó de baja. Sus registros se conservan.');
   await expect(tarjeta(page, 'Asesor de Prueba')).toContainText('De baja');

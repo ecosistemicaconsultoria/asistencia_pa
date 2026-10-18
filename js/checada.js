@@ -158,18 +158,23 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
   $('checada-resultado').hidden = true;
   $('checada-justificacion').value = '';
   $('checada-selfie').hidden = true;
+  $('checada-confirmar').removeAttribute('aria-busy');
+  $('checada-detalles').open = false;
 
   // Sin horario: la persona elige el bloque
   const principal = pasos[pasos.length - 1];
   if (principal.tipo === 'inicio_bloque' && !principal.bloque) {
     $('checada-elegir').hidden = false;
-    $('checada-mapa-tarjeta').hidden = true;
+    $('checada-detalles').hidden = true;
+    $('checada-progreso').hidden = true;
+    $('checada-motivo').textContent = 'Elige el tipo de actividad.';
     principal.bloque = await new Promise((elegir) => {
       for (const b of document.querySelectorAll('#checada-elegir [data-bloque]')) b.onclick = () => elegir(b.dataset.bloque);
       $('checada-cancelar').onclick = () => elegir(null);
     });
     $('checada-elegir').hidden = true;
-    $('checada-mapa-tarjeta').hidden = false;
+    $('checada-detalles').hidden = false;
+    $('checada-progreso').hidden = false;
     if (!principal.bloque) return cerrar();
   }
   const esBloque = ['inicio_bloque', 'fin_bloque'].includes(principal.tipo);
@@ -223,7 +228,14 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
     const listoGPS = terminoGPS || (lectura && lectura.precision <= PRECISION_SUFICIENTE_M);
     const listaSelfie = !selfieRequerida || selfie?.lista();
     const faltaParque = esLlegada && !hallado;
-    $('checada-confirmar').disabled = !listoGPS || !listaSelfie || faltaParque || (necesitaJustificacion() && !justificacionValida());
+    const faltaJustificacion = necesitaJustificacion() && !justificacionValida();
+    $('checada-confirmar').disabled = !listoGPS || !listaSelfie || faltaParque || faltaJustificacion;
+    // Si aún no se puede confirmar, se dice por qué (lo primero que falta)
+    $('checada-motivo').textContent = !listoGPS ? 'Esperando tu ubicación…'
+      : faltaParque ? 'Para confirmar, elige el parque.'
+      : faltaJustificacion ? `Para confirmar, escribe la justificación (mínimo ${MIN_JUSTIFICACION} caracteres).`
+      : !listaSelfie ? 'Para confirmar, toma la selfie y elige «Usar esta foto».'
+      : '';
   };
   if (esBloque || selfieRequerida) selfie = prepararSelfie({ requerida: selfieRequerida, alCambiar: () => actualizarBoton() });
 
@@ -240,6 +252,9 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
     $('checada-distancia-etiqueta').textContent = hallado && !hallado.conPoligono ? 'Distancia al centro' : 'Distancia al perímetro';
     $('checada-distancia').textContent = hallado?.distancia != null ? `${Math.round(hallado.distancia)} m` : '—';
     $('checada-precision').textContent = lectura ? `±${Math.round(lectura.precision)} m` : '—';
+    $('checada-resumen').textContent = lectura
+      ? [hallado?.sitio.nombre, hallado?.distancia != null ? `${Math.round(hallado.distancia)} m` : null, `±${Math.round(lectura.precision)} m`].filter(Boolean).join(' · ')
+      : terminoGPS ? 'Sin ubicación' : 'Buscando…';
     $('checada-mapa-pie').textContent = hallado
       ? `${hallado.conPoligono ? 'Perímetro' : `Radio de ${hallado.sitio.radioM} m`} · ${hallado.sitio.nombre}`
       : lectura ? 'Tu ubicación' : 'Buscando ubicación…';
@@ -268,6 +283,7 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
           : 'No estás en ningún sitio del catálogo.';
     }
     $('checada-justificacion-campo').hidden = !(terminoGPS || lectura) || !necesitaJustificacion();
+    $('checada-progreso').dataset.buscando = String(!terminoGPS && !(lectura && lectura.precision <= PRECISION_SUFICIENTE_M));
     $('checada-progreso').textContent = terminoGPS
       ? (lectura ? 'Ubicación lista.' : '')
       : lectura && lectura.precision <= PRECISION_SUFICIENTE_M
@@ -316,6 +332,8 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
 
   // 4) Armar y registrar los eventos (en orden; cada uno con 1 ms de diferencia)
   $('checada-confirmar').disabled = true;
+  $('checada-confirmar').setAttribute('aria-busy', 'true');
+  $('checada-motivo').textContent = 'Registrando…';
   $('checada-progreso').textContent = 'Registrando…';
   const justificacion = necesitaJustificacion() ? $('checada-justificacion').value.trim() : null;
   const ahora = Date.now();
@@ -359,6 +377,17 @@ export async function abrir({ perfil, estadoDia, eventos, horario, accion, bloqu
   }
 }
 
+// Íconos de resultado en SVG (no emojis: se ven igual en todos los teléfonos)
+const ICONOS = {
+  ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  guardado: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  error: '<path d="M12 6.5v7"/><path d="M12 17.5v.01"/>'
+};
+function pintarIcono(el, tipo) {
+  el.dataset.tipo = tipo;
+  el.innerHTML = `<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICONOS[tipo]}</svg>`;
+}
+
 function mostrarResultado(registros, zona, esPausa) {
   $('checada-captura').hidden = true;
   $('checada-resultado').hidden = false;
@@ -377,18 +406,18 @@ function mostrarResultado(registros, zona, esPausa) {
   const hora = (iso) => new Intl.DateTimeFormat('es-MX', { timeZone: zona, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(iso));
 
   if (registros.some((x) => x.r.estado === 'error')) {
-    icono.dataset.tipo = 'error'; icono.textContent = '!';
+    pintarIcono(icono, 'error');
     $('checada-resultado-titulo').textContent = 'No se pudo registrar';
     $('checada-resultado-detalle').textContent = 'Quedó guardado en el teléfono para revisión. Avisa a coordinación.';
     fila('Detalle', registros.find((x) => x.r.estado === 'error').r.mensaje);
   } else if (registros.some((x) => x.r.estado === 'guardado')) {
-    icono.dataset.tipo = 'guardado'; icono.textContent = '⏱';
+    pintarIcono(icono, 'guardado');
     $('checada-resultado-titulo').textContent = 'Guardado en el teléfono';
     $('checada-resultado-detalle').textContent = 'Se enviará solo en cuanto haya señal. Cuenta la hora en que checaste.';
     fila('Hora del teléfono', hora(principal.evento.hora_dispositivo), true);
     if (principal.evento.selfie_path) fila('Selfie', 'Guardada en el teléfono; se enviará con la checada');
   } else {
-    icono.dataset.tipo = 'ok'; icono.textContent = '✓';
+    pintarIcono(icono, 'ok');
     $('checada-resultado-titulo').textContent = 'Registrado';
     const s = principal.r.servidor;
     $('checada-resultado-detalle').textContent = s ? 'El servidor recibió tu checada.' : 'Esta checada ya estaba registrada.';

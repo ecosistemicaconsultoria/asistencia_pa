@@ -15,7 +15,7 @@ test('entra con correo y contraseña y ve su nombre y organización', async ({ p
   await expect(page.locator('#pantalla-app')).toBeVisible();
   await expect(page.locator('#titulo-vista')).toHaveText('Hola, Asesor');
   await expect(page.locator('#org-nombre')).toHaveText('Parques Alegres IAP');
-  await expect(page.locator('#avatar')).toHaveText('AD');
+  await expect(page.locator('#avatar')).toHaveText('AP')   // se salta "de";
   await page.locator('[data-pestana="perfil"]').click();
   await expect(page.locator('#perfil-nombre')).toHaveText('Asesor de Prueba');
   await expect(page.locator('#perfil-rol')).toHaveText('Asesoría');

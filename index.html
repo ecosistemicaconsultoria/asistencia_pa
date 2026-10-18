@@ -85,18 +85,10 @@
           <button class="opcion" type="button" data-bloque="escritorio"><span class="opcion__titulo">Bloque de escritorio</span><span class="opcion__detalle">Trabajo de oficina o en casa</span></button>
           <button class="opcion" type="button" data-bloque="campo"><span class="opcion__titulo">Bloque de campo</span><span class="opcion__detalle">Recorrido por parques</span></button>
         </div>
-        <figure class="tarjeta mapa" id="checada-mapa-tarjeta">
-          <svg id="checada-mapa" viewBox="0 0 320 180" role="img" aria-label="Mapa esquemático de tu ubicación y el sitio"></svg>
-          <figcaption class="mapa__pie" id="checada-mapa-pie">Buscando ubicación…</figcaption>
-        </figure>
-        <article class="tarjeta">
-          <ul class="lista">
-            <li class="lista__fila"><span>Sitio</span><span class="lista__valor" id="checada-sitio">—</span></li>
-            <li class="lista__fila"><span id="checada-distancia-etiqueta">Distancia</span><span class="lista__valor mono" id="checada-distancia">—</span></li>
-            <li class="lista__fila"><span>Precisión estimada</span><span class="lista__valor mono" id="checada-precision">—</span></li>
-            <li class="lista__fila"><span>Hora del teléfono</span><span class="lista__valor mono" id="checada-hora">—</span></li>
-          </ul>
-        </article>
+        <!-- Lo primero que se ve: si ya hay ubicación y si está dentro de la zona -->
+        <p class="estado-gps" id="checada-progreso" role="status" data-buscando="true">Buscando ubicación…</p>
+        <div class="aviso" id="checada-reloj" role="alert" hidden></div>
+        <div class="aviso" id="checada-zona" role="status" hidden></div>
         <div class="vista" id="checada-sitio-elegir" hidden>
           <button class="boton boton--ancho" type="button" id="checada-otro-parque">Elegir otro parque</button>
           <div class="vista" id="checada-buscador" hidden>
@@ -106,8 +98,6 @@
             <ul class="lista-opciones" id="checada-resultados"></ul>
           </div>
         </div>
-        <div class="aviso" id="checada-reloj" role="alert" hidden></div>
-        <div class="aviso" id="checada-zona" role="status" hidden></div>
         <label class="campo" id="checada-justificacion-campo" hidden>
           <span class="campo__etiqueta">Justificación (obligatoria)</span>
           <textarea class="campo__entrada" id="checada-justificacion" rows="3" maxlength="500" placeholder="Ej.: reunión con el comité en la explanada, a una cuadra del parque"></textarea>
@@ -128,11 +118,31 @@
             </label>
           </div>
         </article>
-        <p class="secundario chico centrado" id="checada-progreso" role="status">Buscando ubicación…</p>
-        <button class="boton-principal" type="button" id="checada-confirmar" disabled>
-          <span class="boton-principal__texto" id="checada-confirmar-texto">Confirmar</span>
-        </button>
-        <button class="boton boton--ancho" type="button" id="checada-cancelar">Cancelar</button>
+        <!-- Detalles de la ubicación: plegados para que confirmar quede a la mano -->
+        <details class="tarjeta detalles" id="checada-detalles">
+          <summary class="detalles__resumen">
+            <span class="detalles__titulo">Ubicación y detalles</span>
+            <span class="detalles__dato" id="checada-resumen">—</span>
+          </summary>
+          <figure class="mapa" id="checada-mapa-tarjeta">
+            <svg id="checada-mapa" viewBox="0 0 320 180" role="img" aria-label="Mapa esquemático de tu ubicación y el sitio"></svg>
+            <figcaption class="mapa__pie" id="checada-mapa-pie">Buscando ubicación…</figcaption>
+          </figure>
+          <ul class="lista">
+            <li class="lista__fila"><span>Sitio</span><span class="lista__valor" id="checada-sitio">—</span></li>
+            <li class="lista__fila"><span id="checada-distancia-etiqueta">Distancia</span><span class="lista__valor mono" id="checada-distancia">—</span></li>
+            <li class="lista__fila"><span>Precisión estimada</span><span class="lista__valor mono" id="checada-precision">—</span></li>
+            <li class="lista__fila"><span>Hora del teléfono</span><span class="lista__valor mono" id="checada-hora">—</span></li>
+          </ul>
+        </details>
+        <!-- Barra fija abajo: confirmar siempre al alcance del pulgar, con el motivo si aún no se puede -->
+        <div class="checada__pie">
+          <p class="checada__motivo" id="checada-motivo" role="status"></p>
+          <button class="boton-principal boton-principal--pie" type="button" id="checada-confirmar" aria-describedby="checada-motivo" disabled>
+            <span class="boton-principal__texto" id="checada-confirmar-texto">Confirmar</span>
+          </button>
+          <button class="boton boton--texto boton--ancho" type="button" id="checada-cancelar">Cancelar</button>
+        </div>
       </div>
       <div class="contenido" id="checada-resultado" hidden>
         <article class="tarjeta resultado">
@@ -199,7 +209,7 @@
       </form>
       <div class="contenido" id="correccion-resultado" hidden>
         <article class="tarjeta resultado">
-          <p class="resultado__icono" aria-hidden="true">✓</p>
+          <p class="resultado__icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></p>
           <h2 class="resultado__titulo">Solicitud enviada</h2>
           <p class="secundario" id="correccion-resultado-detalle">Coordinación la revisará. Verás la respuesta en Historial › Mis solicitudes.</p>
         </article>
@@ -340,7 +350,7 @@
         <a class="boton boton--ancho" id="perfil-panel" href="panel.html" hidden>Abrir panel de coordinación</a>
         <button class="boton boton--ancho" type="button" id="perfil-contrasena">Cambiar contraseña</button>
         <button class="boton boton--ancho" type="button" id="perfil-cambiar-org" hidden>Cambiar de organización</button>
-        <button class="boton boton--tierra boton--ancho" type="button" id="perfil-salir">Cerrar sesión</button>
+        <button class="boton boton--delicado boton--ancho perfil__salir" type="button" id="perfil-salir">Cerrar sesión</button>
       </section>
     </main>
 

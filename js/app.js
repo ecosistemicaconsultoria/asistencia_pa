@@ -50,8 +50,12 @@ function pintarFecha() {
 }
 
 // ---------- Sesión (HU-08) ----------
+// Iniciales del avatar: se saltan "de", "del", "la"… ("Asesor de Prueba" → AP; "María de la Luz" → ML)
+const PARTICULAS = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'e', 'da', 'van', 'von']);
 function iniciales(nombre) {
-  return nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
+  const partes = nombre.split(/\s+/).filter(Boolean);
+  const utiles = partes.filter((p) => !PARTICULAS.has(p.toLowerCase()));
+  return (utiles.length ? utiles : partes).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
 }
 
 function pintarPerfil(correo) {
@@ -616,7 +620,7 @@ function pintarVisitas(e, eventos) {
       ? { accion: 'cambio_sitio', texto: '+ Registrar llegada a otro parque', clase: 'boton boton--ancho' }
       : { accion: 'llegada_sitio', texto: '+ Registrar llegada a parque', clase: 'boton boton--ancho' });
     if (e.enSitio) acciones.push({ accion: 'salida_sitio', texto: `Salir de ${e.enSitio.nombre}`, clase: 'boton boton--ancho' });
-    acciones.push({ accion: 'fin_bloque', bloque: 'campo', texto: 'Terminar bloque de campo', clase: 'boton boton--tierra boton--ancho' });
+    acciones.push({ accion: 'fin_bloque', bloque: 'campo', texto: 'Terminar bloque de campo', clase: 'boton boton--lleno boton--ancho' });
   }
   $('visitas-acciones').replaceChildren(...acciones.map((a) => {
     const b = document.createElement('button');

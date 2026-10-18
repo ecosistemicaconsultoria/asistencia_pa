@@ -32,8 +32,9 @@
 // asis-2026-10-04-v27 · HU-35 instalación: guía de una página con código QR (instalar.html, imprimible), botón "Instalar en este teléfono" en Perfil (Android) y enlaces a la guía.
 // asis-2026-10-04-v28 · HU-32 nómina semanal: CSV con horas ordinarias (40 h lunes a viernes), fuera de horario y medio día libre la semana siguiente; aviso del medio día libre en Historial.
 // asis-2026-10-04-v29 · HU-15b y HU-30 avisos con la app cerrada (Web Push): recordatorio de salida al asesor y alertas "sin checar" y "sin cerrar" a coordinación; registro del teléfono en Perfil y "Probar aviso".
+// asis-2026-10-18-v30 · UX-01 revisión de usabilidad: checada con confirmar fijo abajo y el motivo cuando aún no se puede, ubicación plegable, acciones delicadas discretas, contraste de días futuros, «reducir movimiento», íconos SVG y ayudas del panel plegadas.
 
-const CACHE_VERSION = 'asis-2026-10-04-v29';
+const CACHE_VERSION = 'asis-2026-10-18-v30';
 
 const CASCARON = [
   './',

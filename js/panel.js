@@ -278,7 +278,7 @@ function tarjetaRevision({ evento: e, revision, incidenciaAprobada, incidenciaPe
   validar.textContent = 'Validar';
   const observar = document.createElement('button');
   observar.type = 'button';
-  observar.className = 'boton boton--tierra';
+  observar.className = 'boton boton--delicado';
   observar.dataset.revisar = 'observada';
   observar.textContent = 'Observar';
   botones.append(validar, observar);
@@ -465,7 +465,7 @@ function tarjeta(i) {
   aprobar.textContent = 'Aprobar';
   const rechazar = document.createElement('button');
   rechazar.type = 'button';
-  rechazar.className = 'boton boton--tierra';
+  rechazar.className = 'boton boton--delicado';
   rechazar.dataset.resolver = 'rechazada';
   rechazar.textContent = 'Rechazar';
   botones.append(aprobar, rechazar);

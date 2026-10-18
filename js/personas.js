@@ -275,7 +275,7 @@ function tarjeta(m, cuenta, filasHorario) {
       botones.append(restablecer);
     }
     if (!yo) {
-      const baja = boton('Dar de baja', 'boton--tierra', 'baja');
+      const baja = boton('Dar de baja', 'boton--delicado', 'baja');
       baja.addEventListener('click', async () => {
         if (!window.confirm(`¿Dar de baja a ${m.nombre_completo}? Ya no podrá entrar a la app. Sus registros se conservan y se puede reactivar.`)) return;
         baja.disabled = true;
@@ -285,7 +285,14 @@ function tarjeta(m, cuenta, filasHorario) {
           await pintarPersonas();
         } catch (e) { errorEn(error, mensaje(e)); baja.disabled = false; }
       });
-      botones.append(baja);
+      // La baja es poco frecuente: vive dentro de "Editar", separada, para no tocarla por error
+      const delicado = document.createElement('div');
+      delicado.className = 'personas__delicado';
+      const nota = document.createElement('p');
+      nota.className = 'secundario chico';
+      nota.textContent = 'La baja no borra nada: ya no podrá entrar y sus registros se conservan.';
+      delicado.append(nota, baja);
+      edicion.append(delicado);
     }
   } else {
     const reactivar = boton('Reactivar', 'boton--lleno', 'reactivar');
