@@ -40,8 +40,9 @@
 // asis-2026-10-18-v35 · HU-34 respaldos: ZIP mensual con CSV por tabla y huellas SHA-256, constancia inalterable (migración 0006) y aviso si no hay respaldo reciente.
 // asis-2026-10-18-v36 · HU-11 marca por organización: color principal configurable desde el panel con contraste AA obligatorio (migración 0007).
 // asis-2026-10-18-v37 · HU-38 manual de réplica para otras IAP (docs/REPLICA.md) e instalación completa en un solo archivo SQL.
+// asis-2026-10-18-v38 · Cloudflare Pages: el service worker guarda y entrega copias limpias de las páginas que el servidor redirige (panel.html → panel), la app abre en ./ y se agregan encabezados de seguridad (_headers).
 
-const CACHE_VERSION = 'asis-2026-10-18-v37';
+const CACHE_VERSION = 'asis-2026-10-18-v38';
 
 const CASCARON = [
   './',
@@ -100,8 +101,19 @@ const CASCARON = [
   './assets/presente-32.png'
 ];
 
+// Algunos servidores (Cloudflare Pages) redirigen "panel.html" a "panel". El navegador NO acepta que el service worker
+// entregue una redirección guardada como página (ERR_FAILED): se guarda y se entrega siempre una copia "limpia".
+async function limpia(respuesta) {
+  if (!respuesta || !respuesta.redirected) return respuesta;
+  return new Response(await respuesta.blob(), { status: respuesta.status, statusText: respuesta.statusText, headers: respuesta.headers });
+}
+
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_VERSION).then((c) => c.addAll(CASCARON.map((u) => new Request(u, { cache: 'reload' })))));
+  e.waitUntil(caches.open(CACHE_VERSION).then((c) => Promise.all(CASCARON.map(async (u) => {
+    const r = await fetch(new Request(u, { cache: 'reload' }));
+    if (!r.ok) throw new Error(`No se pudo guardar ${u}: ${r.status}`);
+    await c.put(u, await limpia(r));
+  }))));
   // Primera instalación: activar de inmediato. Actualizaciones: esperar a que la persona toque "Actualizar".
   if (!self.registration.active) self.skipWaiting();
 });
@@ -125,12 +137,14 @@ self.addEventListener('fetch', (e) => {
 
   e.respondWith((async () => {
     const cache = await caches.open(CACHE_VERSION);
-    const guardada = await cache.match(req, { ignoreSearch: true });
-    if (guardada) return guardada;
+    // Dirección limpia (/panel) → la copia guardada de panel.html
+    const pagina = req.mode === 'navigate' && !/\.[a-z0-9]+$/i.test(url.pathname) && !url.pathname.endsWith('/') ? `${url.pathname}.html` : null;
+    const guardada = await cache.match(req, { ignoreSearch: true }) || (pagina && await cache.match(pagina, { ignoreSearch: true }));
+    if (guardada) return limpia(guardada);
     try {
       return await fetch(req);
     } catch (err) {
-      if (req.mode === 'navigate') return cache.match('./index.html');
+      if (req.mode === 'navigate') return limpia(await cache.match('./index.html'));
       throw err;
     }
   })());
